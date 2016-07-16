@@ -1,223 +1,536 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
 
+
+
+  
+
+
+<html class="theme-next muse use-motion">
 <head>
-  <meta http-equiv="Content-Type" content="text/html" charset="UTF-8" >
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
-  <title>Hexo</title>
-  <meta name="description" content="" />
-  <meta name="HandheldFriendly" content="True" />
-  <meta name="MobileOptimized" content="320" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" type="text/css" href="/css/component.css" />
-  <link rel="stylesheet" type="text/css" href="/css/screen.css" />
-  <meta name="generator" content="Hexo">
-  <script src="http://static.duoshuo.com/embed.js"></script>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/vendors/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
   
   
   
-
   
 
-</head>
-<body>
-<div class="container">
-    <div class="mp-pusher" id="mp-pusher">
-        <i id="scroll-up" class="fa fa-angle-up"></i>
-        <nav id="mp-menu" class="mp-menu">
-            <div class="mp-level">
-                <a data-pjax class="back-home" style="font-size: 20px" href="/"><h2 ><i class="fa fa-home"></i>
-                        Home</h2></a>
-                <ul class="first-level">
-                    <li>
-                        <a class="fa fa-archive" href="#"><i class="fa fa-angle-left">
-                            </i>&nbsp;&nbsp;Archive</a>
-                        <div class="mp-level page-list">
-                            <h2 ><i class="fa fa-archive"></i>
-                                Archive</h2>
-                            <a class="mp-back" href="#">back</a>
-                            <form id="search-form" action="">
-                                <input type="text" class="search search-archive" placeholder="Search.."/>
-                            </form>
-                            <ul>
-                                <div class="mp-scroll">
-                                
-                                <li class="search-archive-li mp-pjax">
-                                    <a href="/2016/07/12/The-hacker-guide-to-python-The-keypoints/">Keypoints of &quot;The hacker guide to python&quot;</a>
-                                </li>
-                                
-                                </div>
-                            </ul>
-                        </div>
-                    </li>
-                    <li>
-                        <a class="fa fa-copy" href="#"><i class="fa fa-angle-left">
-                            </i>&nbsp;&nbsp;Categories</a>
-
-                        <div class="mp-level page-list">
-                            <h2 ><i class="fa fa-copy"></i>
-                                Categories</h2>
-                            <a class="mp-back" href="#">back</a>
-                            <form id="search-form" action="">
-                                <input type="text" class="search search-category" placeholder="Search.."/>
-                            </form>
-                            <ul>
-                                <div class="mp-scroll">
-                                
-                                </div>
-                            </ul>
-                        </div>
-                    </li>
-                    <li>
-                        <a class="fa fa-tags" href="#"><i class="fa fa-angle-left">
-                            </i>&nbsp;&nbsp;Tags</a>
-                        <div class="mp-level page-list">
-                            <h2 ><i class="fa fa-tags"></i>
-                                Tags</h2>
-                            <a class="mp-back" href="#">back</a>
-                            <form id="search-form" action="">
-                                <input type="text" class="search search-tag" placeholder="Search.."/>
-                            </form>
-                            <ul>
-                                <div class="mp-scroll">
-                                
-                                </div>
-                            </ul>
-                        </div>
-                    </li>
-                    
-                    <li class="mp-pjax"><a class="fa fa-user" href="/about">&nbsp;&nbsp;&nbsp;About me</a></li>
-                    <li><a class="fa fa-github" href="#">&nbsp;&nbsp;&nbsp;Github</a></li>
-
-                </ul>
-
-            </div>
-        </nav>
-        <div id="pjax">
-            <div class="pjax-hidden" style="display: none">
-                
-                    <a  data-pjax href="/2016/07/12/The-hacker-guide-to-python-The-keypoints/">Keypoints of &quot;The hacker guide to python&quot;</a>
-                
-                
-                
-                <a data-pjax class="fa fa-user" href="/about">&nbsp;&nbsp;&nbsp;About me</a>
-            </div>
-            <nav class="nexus">
-                <li  style="border-left: 1px solid #c6d0da;">
-                    <a id="trigger" href="#"><i class="fa fa-bars"></i></a>
-                </li>
-                <li ><a id="nexus-back" data-pjax href="/">Hexo</a></li>
-                
-                <div id="nav-container">
-                    <div class="post-navbar" style="line-height: 63px;display:none">
-                        <li id="navbar-title"><a href="#">undefined</a></li>
-                        <li id="navbar-toc" style="border-left: none">
-                            <a style="padding-right: 15px">
-                                <span id="toc-content" >Introduction</span><i class="fa fa-chevron-down" ></i>
-                            </a>
-                            <div class="hidden-box">
-                                <ul id="toc"></ul>
-                            </div>
-                        </li>
-                    </div>
-                </div>
-                
-            </nav>
-
-            <div class="scroller">
-            <div class="scroller-inner">
-
-
-<!-- -->
-<!--<body class="home-template">-->
-<!---->
   
-<main class="content" role="main">
-
     
-    <article class="post">
-
-        <header class="post-header">
-            <div class="tag-tile">
-                
-                <span class="fa fa-bookmark" style="float:right;color:#f39c12"></span>
-            </div>
-            <h1 class="post-title"><a data-pjax href="/2016/07/12/The-hacker-guide-to-python-The-keypoints/">Keypoints of "The hacker guide to python"</a>
-            </h1>
-
-            <div class="post-meta">
-                Post on<span class="fa fa-clock-o"></span>
-                <time datetime="2016-07-12T10:51:03.000Z"
-                      itemprop="datePublished">2016-07-12</time>
-            </div>
-        </header>
-        <section class="post-excerpt">
-            <p>
-                
-                #The code style for writing python code
-
-use 4 spaces per indentation level
-limit all lines a max of 79 chars
-seperate top-level function and class-definitions with 2 blank lines
-encoding file using ASCII or utf-8
-one mo
-                
-            </p>
-            
-        </section>
-    </article>
     
-    <nav class="pagination" role="pagination">
-        
-        <span class="page-number">Page 1 of 1</span>
-        
-    </nav>
-</main>
-
+  
 
   
-<footer class="site-footer">
-    
-    <div class="inner">
-        <section class="copyright"><a href="/"></a> &copy; Hexo 2014</section>
-        <section class="poweredby">Published with <a target="_blank" href="http://hexo.io/">Hexo   </a> and Theme by <a target="_blank" href="https://github.com/yuche/hexo-theme-kael">Kael</a></section>
-    </div>
-</footer>
-</div>
-</div><!-- /scroller -->
 
-</div><!-- /pusher -->
-</div><!-- /container -->
-</div>
-
-<!-- Easter eggs -->
-
-<div class="egg animated">
-    <a id="close-button" href="#">X</a>
-    <div class="block">
-        <div class="loading">
-            <span class="ball1"></span>
-            <span class="ball2"></span>
-        </div>
-    </div>
-</div>
   
-<script src="//cdn.staticfile.org/jquery/1.11.0/jquery.min.js"></script>
-<script>
-    if (!window.jQuery) {
-        var script = document.createElement('script');
-        script.src = "/js/jquery.min.js";
-        document.body.appendChild(script);
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/vendors/font-awesome/css/font-awesome.min.css?v=4.4.0" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.0.1" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.0.1" />
+
+
+
+
+
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hexo">
+
+
+
+<script type="text/javascript" id="hexo.configuration">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    scheme: 'Muse',
+    sidebar: {"position":"left","display":"post"},
+    fancybox: true,
+    motion: true,
+    duoshuo: {
+      userId: 0,
+      author: '博主'
     }
+  };
 </script>
-<script type="text/javascript" src="/js/lib.js"></script>
-<script type="text/javascript" src="/js/main.js"></script>
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/"/>
+
+  <title> Hexo </title>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
 
 
 
 
 
 
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left 
+   page-home 
+ ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-meta ">
+  
+
+  <div class="custom-logo-site-title">
+    <a href="/"  class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <span class="site-title">Hexo</span>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+  <p class="site-subtitle"></p>
+</div>
+
+<div class="site-nav-toggle">
+  <button>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+    <span class="btn-bar"></span>
+  </button>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            标签
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+  <section id="posts" class="posts-expand">
+    
+      
+
+  
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2016/07/12/The-hacker-guide-to-python-The-keypoints/" itemprop="url">
+                  Keypoints of "The hacker guide to python"
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            <span class="post-meta-item-icon">
+              <i class="fa fa-calendar-o"></i>
+            </span>
+            <span class="post-meta-item-text">发表于</span>
+            <time itemprop="dateCreated" datetime="2016-07-12T18:51:03+08:00" content="2016-07-12">
+              2016-07-12
+            </time>
+          </span>
+
+          
+
+          
+            
+          
+
+          
+
+          
+          
+
+          
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="The-code-style-for-writing-python-code"><a href="#The-code-style-for-writing-python-code" class="headerlink" title="The code style for writing python code"></a>The code style for writing python code</h2><ul>
+<li>use 4 spaces per indentation level</li>
+<li>limit all lines a max of 79 chars</li>
+<li>seperate top-level function and class-definitions with 2 blank lines</li>
+<li>encoding file using ASCII or utf-8</li>
+<li>one module import per import statement and per line, at the top of the file, after comments and docstrings, grouped first by standard, then third party, and finally local library imports.</li>
+</ul>
+<h2 id="The-zen-of-Python-by-Tim-Peters"><a href="#The-zen-of-Python-by-Tim-Peters" class="headerlink" title="The zen of Python, by Tim Peters"></a>The zen of Python, by Tim Peters</h2><blockquote>
+<p>Beautiful is better than ugly.<br>Explicit is better than implicit.<br>Simple is better than complex.<br>Complex is better than complicated.<br>Flat is better than nested.<br>Sparse is better than dense.<br>Readability counts.<br>Special cases aren’t special enough to break the rules.<br>Although practicality beats purity.<br>Errors should never pass silently.<br>Unless explicitly silenced.<br>In the face of ambiguity, refuse the temptation to guess.<br>There should be one– and preferably only one –obvious way to do it.<br>Although that way may not be obvious at first unless you’re Dutch.<br>Now is better than never.<br>Although never is often better than <em>right</em> now.<br>If the implementation is hard to explain, it’s a bad idea.<br>If the implementation is easy to explain, it may be a good idea.<br>Namespaces are one honking great idea – let’s do more of those!</p>
+</blockquote>
+<h2 id="The-internals-of-the-‘import’-subsystem"><a href="#The-internals-of-the-‘import’-subsystem" class="headerlink" title="The internals of the ‘import’ subsystem"></a>The internals of the ‘import’ subsystem</h2><ul>
+<li>The list of modules currently imported is available through the sys.modules variable</li>
+<li>builtin modules are listed in sys.builtin_module_names.</li>
+<li>where to look for modules to load： sys.path.append(‘xxx’) or PYTHONPATH env variable.</li>
+</ul>
+<h2 id="The-decorator"><a href="#The-decorator" class="headerlink" title="The decorator"></a>The decorator</h2><ul>
+<li>what: a function that takes another function as an argument and replace it with a new, modified function.</li>
+</ul>
+<h2 id="The-generator"><a href="#The-generator" class="headerlink" title="The generator"></a>The generator</h2><ul>
+<li>what: an object that returns a value on each call of its next() method until it raises StopIteration. It offers an easy way to create objects that implement the iterator protocol.</li>
+<li>how: write a normal python function that contain a yield statement.<blockquote>
+<p>i.e.: xrange(integer)  next() yield</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="The-list-comprehension"><a href="#The-list-comprehension" class="headerlink" title="The list comprehension"></a>The list comprehension</h2><ul>
+<li>what： allow to define a list’s contents inline with its declaration.<blockquote>
+<p>i.e.: x=[i for i in (1,2,3)]</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="The-functional-functions-funtioning"><a href="#The-functional-functions-funtioning" class="headerlink" title="The functional functions funtioning"></a>The functional functions funtioning</h2><ul>
+<li>what: builtin functions<blockquote>
+<p>i.e.: map(function, iterator)  filter(function, iterator)  enumerate(iterator)  sorted(iterator)  any(iterable)  </p>
+</blockquote>
+</li>
+</ul>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+  </section>
+
+  
+
+
+          </div>
+          
+
+
+          
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <section class="site-overview sidebar-panel  sidebar-panel-active ">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="/images/avatar.gif"
+               alt="John Doe" />
+          <p class="site-author-name" itemprop="name">John Doe</p>
+          <p class="site-description motion-element" itemprop="description"></p>
+        </div>
+        <nav class="site-state motion-element">
+          <div class="site-state-item site-state-posts">
+            <a href="/archives">
+              <span class="site-state-item-count">1</span>
+              <span class="site-state-item-name">日志</span>
+            </a>
+          </div>
+
+          
+
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+      </section>
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2016</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+</div>
+
+<div class="powered-by">
+  由 <a class="theme-link" href="http://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Muse
+  </a>
+</div>
+
+        
+
+        
+      </div>
+    </footer>
+
+    <div class="back-to-top">
+      <i class="fa fa-arrow-up"></i>
+    </div>
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
+  <script type="text/javascript" src="/vendors/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/vendors/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/vendors/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.0.1"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.0.1"></script>
+
+
+
+  
+  
+
+  
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.0.1"></script>
+
+
+
+  
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
 
 </body>
 </html>
