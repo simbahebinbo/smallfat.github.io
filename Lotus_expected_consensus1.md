@@ -4,10 +4,8 @@ tags:
 grammar_cjkRuby: true
 ---
 
-## Lotus链的两种共识和出块机制
+## Lotus链的两种共识
 Lotus链是IPFS的激励层，主要作用是有效激励用户投入资源进行分布式存储。从区块链的角度考虑，必须形成共识保证block mining的正确性；从有效存储的角度考虑，亦需要形成共识保证storage mining的正确性。因此，Lotus内存在两种共识，即：block mining场景下的共识（Expected Consensus）和storage mining场景下的共识。
-
-利用EC共识，系统在所有候选节点中，依据各节点当前有效存储量与总有效存储中的比例作为概率，来确定当前轮次的获胜者。由于按照概率来确定获胜者，每轮选举获胜者的数量可能是0，也有可能>=1。获胜者有权利创建新的block，成为DAG链结构（tipset）中的其中一个block。
 
 ## 期望共识（Expected Consensus）
 EC共识是基于概率的拜占庭容错协议。
