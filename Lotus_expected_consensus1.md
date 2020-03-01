@@ -4,14 +4,15 @@ tags:
 grammar_cjkRuby: true
 ---
 
-# Lotus链的两种共识和出块机制
+## Lotus链的两种共识和出块机制
 Lotus链是IPFS的激励层，主要作用是有效激励用户投入资源进行分布式存储。从区块链的角度考虑，必须形成共识保证block mining的正确性；从有效存储的角度考虑，亦需要形成共识保证storage mining的正确性。因此，Lotus内存在两种共识，即：block mining场景下的共识（Expected Consensus）和storage mining场景下的共识。
-利用EC共识，系统在所有候选节点中，依据各节点当前有效存储量与总有效存储中的比例作为概率，来确定当前轮次的获胜者。由于按照概率来确定获胜者，每轮选举获胜者的数量可能是0，也有可能>1。获胜者有权利创建新的block，成为DAG（tipset）中的其中一个block。
 
-# 期望共识（Expected Consensus）
+利用EC共识，系统在所有候选节点中，依据各节点当前有效存储量与总有效存储中的比例作为概率，来确定当前轮次的获胜者。由于按照概率来确定获胜者，每轮选举获胜者的数量可能是0，也有可能>=1。获胜者有权利创建新的block，成为DAG链结构（tipset）中的其中一个block。
+
+## 期望共识（Expected Consensus）
 EC共识是基于概率的拜占庭容错协议。每一轮会运行领导人选举，理想的情况下，有一名或一名以上候选人会赢得选举，从而获得出块的权利；在不理想的情况下，可能没有候选人赢得选举。赢家们会基于随机数计算选举的证明数据。在随后的轮次中，选举证明数据将会被验证。
 
-### leader选举
+#### leader选举
 Leader选举必须是秘密、公正、可验证的。
 
 随机数被用在选举过程中，以确保其秘密性。在Lotus链中，存在一个独立的ticket链，这些tickets正是被用作随机数产生器的输入。
@@ -72,6 +73,7 @@ const MaxChallengeTicketSize = 2^len(Hash)
 ChallengeTicket/MaxChallengeTicketSize < Target
 ```
 而选举获胜概率是由miner的有效存储值与整个网络有效存储值的比值决定的。公式演变为：
+
 ```
 const MaxChallengeTicketSize = 2^len(Hash)
 ChallengeTicket/MaxChallengeTicketSize < ActivePowerInSector/NetworkPower
@@ -81,6 +83,7 @@ ChallengeTicket/MaxChallengeTicketSize < ActivePowerInSector/NetworkPower
 ```
 
 - 伪代码
+
 ```
 winningTickets = []
 def checkTicketForWinners(partialTickets):
@@ -99,4 +102,4 @@ def TicketIsWinner(challengeTicket):
 由于计算效率的关系，EC共识协议的实现做了一些优化，在以后的文章中会谈到。
 
 # 结语
-EC共识利用概率计算实现了无交互式的Leader选举，实现了同时产生多个块的DAG链结构，有效地提高了链的出块效率，扩展了链容量。
+EC共识利用概率计算实现了无交互式的Leader选举，实现了同时产生多个块的DAG链结构，有效地提高了链的出块效率，扩展了整个链的容量。
