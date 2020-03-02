@@ -20,7 +20,9 @@ Filecoin最早的一个实现是go-filecoin项目，原来预计的第一阶段�
 ![业务流](./images/Screenshot_from_2020-02-15_23-16-21.png)
 
 如上图所示，系统中参与者有storage client、storage miner、block miner、chain等角色。
-在chain的每个epoch，block miner们会参与Secure Leader Election，选举完成以后，winner们就可以把发送过来的各种messages，包括storage request message进行打包成为block并执行，新的block随后被同步到网络上的其他节点。storage miner收到storage request以后，进行存储，并生成PoSt存储证明。  
+在chain的每个epoch，block miner们会参与Secure Leader Election。  
+选举完成以后，winner们就可以把发送过来的各种messages（包括storage request message），打包进block并执行，新的block随后被同步到网络上的其他节点。  
+storage miner收到storage request以后，进行存储，并生成PoSt存储证明。  
 
 ###### 怎么达到激励的目的
 俗话说，无利不起早。要让资本进入这个项目，得让资金有所回报。Filecoin项目的数字货币为FIL，按照白皮书，70%的FIL会奖励给参与这个项目的矿工，其中包括区块挖掘奖励和数据储存奖励等。
@@ -36,5 +38,5 @@ Filecoin最早的一个实现是go-filecoin项目，原来预计的第一阶段�
   - 在存储完成之后的数个周期内，需要一直对此次存储进行证明。只有经过证明的存储，才可以拿到相应部分的存储挖矿奖励。
 
 #### 结语
-这篇文章对Lotus做了一个总体介绍，这样我们对于整个系统的轮廓就会有一些了解。如此，在下面介绍和讨论具体技术的时候，可以可以更好的沟通了。
+这篇文章对Lotus做了一个总体介绍，这样我们对于系统的轮廓就会有一些初步了解。如此，在后面介绍具体技术的时候，就更容易理解了。
 
