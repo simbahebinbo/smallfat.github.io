@@ -28,12 +28,12 @@ storage miner收到storage request以后，进行存储，并生成PoSt存储证
 俗话说，无利不起早。要让资本进入这个项目，得让资金有所回报。Filecoin项目的数字货币为FIL，按照白皮书，70%的FIL会奖励给参与这个项目的矿工，其中包括区块挖掘奖励和数据储存奖励等。
 
 ###### 如何保证存储的安全性
-- 区块挖掘的安全性
+- 区块挖掘的安全性  
   所有参与挖矿的节点都会参与被称为Expected Consensus的链共识，运行Secure Leader Election，被选举出的Leader(们)都有权创建新的block，并加入当前高度的tipset。   
   EC共识采用VRF生成随机数，采用PoSt算法生成可验证的区块证明，并在之后的链周期进行验证，来解决block mining中的安全风险。
 	
-- 数据存储的安全性
-  当storage miner通知storage client说已经成功存储完数据，storage client怎么知道对方真实的存储了数据呢？系统采用了以下几个方法：
+- 数据存储的安全性  
+  当storage miner通知storage client说已经成功存储完数据，storage client怎么知道对方真实的存储了数据呢？系统采用了以下几个方法：  
   - 在存储数据完成以后，storage miner需要使用PoSt生成数据已经存储的证明。
   - 在存储完成之后的数个周期内，需要一直对此次存储进行证明。只有经过证明的存储，才可以拿到相应部分的存储挖矿奖励。
 
