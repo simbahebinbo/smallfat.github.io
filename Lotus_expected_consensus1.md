@@ -1,31 +1,30 @@
----
-title: Lotus链 - Expected Consensus(期望共识协议) 一
-tags: 
-grammar_cjkRuby: true
----
+# <center>Lotus链 - Expected Consensus(期望共识协议) 一</center>
 
 ## Lotus链的两种共识
-Lotus链是IPFS的激励层，主要作用是有效激励用户投入资源进行分布式存储。从区块链的角度考虑，必须形成共识保证block mining的正确性；从有效存储的角度考虑，亦需要形成共识保证storage mining的正确性。因此，Lotus内存在两种共识，即：block mining场景下的共识（Expected Consensus）和storage mining场景下的共识。
+Lotus链是IPFS的激励层，主要作用是有效激励用户投入资源进行分布式存储。
+
+从区块链的角度考虑，必须形成共识保证出块（block mining）的正确性；从有效存储的角度考虑，亦需要形成共识保证客户数据存储（storage mining）的正确性。因此，Lotus内存在两种共识，即：block mining场景下的共识（Expected Consensus）和storage mining场景下的共识。
 
 ## 期望共识（Expected Consensus）
 EC共识是基于概率的拜占庭容错协议。
 
-选举时，系统在所有候选节点中，依据各节点当前有效存储量与总有效存储中的比例作为概率，来确定当前轮次的获胜者。 
+EC共识规定，出块权由每轮进行的一次领导人选举（secure leader election）选出的矿工们获得。
+
+选举时，系统在所有候选矿工节点中，依据各节点当前有效存储量与总有效存储中的比例作为概率，来确定当前轮次的获胜者。 
  
-理想的情况下，有一名或一名以上候选人会赢得选举，从而获得出块的权利；在不理想的情况下，可能没有候选人赢得选举。获胜者有权利创建新的block，成为DAG链结构（tipset）中的其中一个block，并会基于随机数计算选举的证明数据。在随后的轮次中，选举证明数据将会被验证。
+理想的情况下，有一名或一名以上候选人会赢得选举，从而获得出块的权利；在不理想的情况下，可能没有候选人赢得选举。
+
+获胜者有权利创建新的block，成为DAG链结构（tipset）中的其中一个block，并基于随机数来计算选举的证明数据。在随后的轮次中，这些选举证明数据将会被系统验证。
 
 Leader选举必须是秘密、公正、可验证的。
 
 随机数被用在选举过程中，以确保其秘密性。在Lotus链中，存在一个独立的ticket链，这些tickets正是被用作随机数产生器的输入。
 
-选举需要产生候选人，然后从候选人中选出获胜者。选举完成后，在随后的轮次中，还需要持续的验证此次选举的正确性，这正是选举的可验证性。这个过程被称为ElectionPoSt，即选举时空证明。
+选举首先需要产生候选人，然后从候选人中选出获胜者。选举完成后，在随后的轮次中，还需要持续的验证此次选举的正确性，这就是选举的可验证性。这个过程被称为ElectionPoSt，即选举时空证明。
 
 选举的公正性是指：
-- 按照某miner的有效存储数与总网络存储数的比例作为获胜概率来进行选举  
-  这决定了有效sector中的内容必须被纳入到选举的计算中
-
-- 对单个节点而言，这次选举是针对该节点上的miner而进行的  
-  因此miner的id应该也要纳入到选举的计算中 
+- 按照某miner的有效存储数与总网络存储数的比例作为获胜概率来进行选举
+- 对单个节点而言，这次选举是针对该节点上的miner而进行的
 
 Lotus链进行选举的流程主要包括：
 - 产生随机数
@@ -37,11 +36,15 @@ Lotus链进行选举的流程主要包括：
 
 ##### 产生随机数
 在当前轮次，随机数的生成公式如下：  
+
 ```
-post_randomness = VRF(minerID || currentBlockHeight || ChainRandomness(currentBlockHeight - SPC_LOOKBACK_POST))
+post_randomness = VRF(minerID
+                    || currentBlockHeight 
+		    || ChainRandomness(currentBlockHeight - SPC_LOOKBACK_POST))
 ```
+
 由公式可以看出
-- 随机数种子 - 当前轮次前SPC_LOOKBACK_POST轮的随机数，叠加minerID，再叠加当前轮次高度
+- 随机数种子的组成：前SPC_LOOKBACK_POST轮的随机数，叠加minerID，再叠加当前轮次高度
 - 使用VRF（可验证随机函数）来生成随机数，具体使用的算法由VRF的实现决定
 
 ##### 生成Partial Tickets
@@ -69,6 +72,7 @@ challengeTicket = finalizeTicket(PartialTicket)
 def finalizeTicket(partialTicket):
     return Hash(partialTicket)
 ```
+
 由此可知，Challenge Ticket也可以认为是一个随机数，不可预测。Hash算法需要保证其值在整个Hash值域是均匀分布的。
 
 ##### 进行选举
@@ -81,7 +85,7 @@ const MaxChallengeTicketSize = 2^len(Hash)
 ChallengeTicket/MaxChallengeTicketSize < Target
 ```
 
-而选举获胜概率是由miner的有效存储值与整个网络有效存储值的比值决定的。公式演变为：
+而选举获胜概率是由miner的有效存储值与整个网络有效存储值的比值决定的，因此公式演变为：
 
 ```
 const MaxChallengeTicketSize = 2^len(Hash)
@@ -108,7 +112,7 @@ def TicketIsWinner(challengeTicket):
     return ChallengeTicket * NetworkPower < ActivePowerInSector * MaxChallengeTicketSize
 ```
 
-由于计算效率的关系，EC共识协议的实现做了一些优化，在以后的文章中会谈到。
+由于计算效率的关系，EC共识协议在真正实现时做了一些优化，在以后的文章中我们会谈到。
 
 # 结语
-EC共识利用概率计算实现了无交互式的Leader选举，实现了同时产生多个块的DAG链结构，有效地提高了链的出块效率，扩展了整个链的容量。
+EC共识利用概率计算实现了无交互式的Leader选举，拥有能同时产生多个块的DAG链结构，这样的结构，有效地提高了链的出块效率，并极大地扩展了整个链的容量。
