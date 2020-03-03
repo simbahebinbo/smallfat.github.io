@@ -1,11 +1,13 @@
 # <center>Lotus链 - 期望共识原理浅析 一</center>
 
 ## Lotus链的两种共识
-Lotus链是IPFS的激励层，主要作用是有效激励矿工投入硬件资源参与Filecoin分布式存储。
+Lotus链是IPFS的激励层，主要作用是激励矿工投入硬件资源，参与Filecoin分布式存储。
 
 系统中有两种不同场景下的共识：出块(block mining)场景下的共识即Expected Consensus共识，以及客户数据存储(storage mining)场景下的共识即Storage Consensus共识。
 
 Expected Consensus共识保证出块（block mining）的正确性；Storage Consensus共识保证客户数据存储（storage mining）的正确性。
+
+本文主要对期望共识的原理做了一些分析介绍，供对Filecoin有兴趣且有一定了解的同学进行参考。
 
 ## 期望共识（Expected Consensus）
 EC共识是基于概率的拜占庭容错协议。
