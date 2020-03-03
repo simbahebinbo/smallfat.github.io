@@ -1,14 +1,16 @@
-# <center>Lotus链 - Expected Consensus(期望共识协议) 一</center>
+# <center>Lotus链 - 期望共识(Expected Consensus) 一</center>
 
 ## Lotus链的两种共识
-Lotus链是IPFS的激励层，主要作用是有效激励用户投入资源进行分布式存储。
+Lotus链是IPFS的激励层，主要作用是有效激励矿工投入硬件资源参与Filecoin分布式存储。
 
-从区块链的角度考虑，必须形成共识保证出块（block mining）的正确性；从有效存储的角度考虑，亦需要形成共识保证客户数据存储（storage mining）的正确性。因此，Lotus内存在两种共识，即：block mining场景下的共识（Expected Consensus）和storage mining场景下的共识。
+系统中有两种不同场景下的共识：出块(block mining)场景下的共识即Expected Consensus共识，以及客户数据存储(storage mining)场景下的共识即Storage Consensus共识。
+
+Expected Consensus共识保证出块（block mining）的正确性；Storage Consensus共识保证客户数据存储（storage mining）的正确性。
 
 ## 期望共识（Expected Consensus）
 EC共识是基于概率的拜占庭容错协议。
 
-EC共识规定，出块权由每轮进行的一次领导人选举（secure leader election）选出的矿工们获得。
+EC共识规定，出块权由每轮进行的领导人选举（secure leader election）选出的矿工们获得。
 
 选举时，系统在所有候选矿工节点中，依据各节点当前有效存储量与总有效存储中的比例作为概率，来确定当前轮次的获胜者。 
  
@@ -39,8 +41,9 @@ Lotus链进行选举的流程主要包括：
 
 ```
 post_randomness = VRF(minerID
-                    || currentBlockHeight 
-		    || ChainRandomness(currentBlockHeight - SPC_LOOKBACK_POST))
+|| currentBlockHeight 
+|| ChainRandomness
+  (currentBlockHeight - SPC_LOOKBACK_POST))
 ```
 
 由公式可以看出
@@ -53,7 +56,11 @@ post_randomness = VRF(minerID
 3. 针对每一个sample sector，Miner使用如下函数生成PartialTicket：
 
 ```
-PartialTicket = Hash(post_randomness || minerID || C_1_Output || … || C_k_Output)
+PartialTicket = Hash(post_randomness 
+                  || minerID 
+		  || C_1_Output 
+		  || … 
+		  || C_k_Output)
 ```
 
 由函数可以看出，之前步骤生成的随机数post_randomness，miner id，数据块内容C_x_Output都作为参数连接到一起，然后做hash操作，生成Partial Ticket。
@@ -67,7 +74,8 @@ PartialTicket = Hash(post_randomness || minerID || C_1_Output || … || C_k_Outp
 Challenge Ticket的计算方法如下：  
 
 ```
-challengeTicket = finalizeTicket(PartialTicket) 
+challengeTicket = finalizeTicket(
+                     PartialTicket) 
 
 def finalizeTicket(partialTicket):
     return Hash(partialTicket)
@@ -81,18 +89,19 @@ def finalizeTicket(partialTicket):
 由于Challenge Ticket的均匀分布特性，那么只要将其进行归一化(Normalization)为(0,1)值区间后，与一个阈值Target进行大小比较，若小于Target值，则选举成功。Target就是选举获胜概率。如下公式所示：
 
 ```
-const MaxChallengeTicketSize = 2^len(Hash)
-ChallengeTicket/MaxChallengeTicketSize < Target
+const MaxTicketSize = 2^len(Hash)
+ChallengeTicket/MaxTicketSize < Target
 ```
 
 而选举获胜概率是由miner的有效存储值与整个网络有效存储值的比值决定的，因此公式演变为：
 
 ```
-const MaxChallengeTicketSize = 2^len(Hash)
-ChallengeTicket/MaxChallengeTicketSize < ActivePowerInSector/NetworkPower
+const MaxTicketSize = 2^len(Hash)
+ChallengeTicket/MaxTicketSize 
+    < ActPowerInSec/NetworkPower
 
-*ActivePowerInSector: 扇区有效存储量
-*NetworkPower：       网络总有效存储量
+*ActPowerInSec: 扇区有效存储量
+*NetworkPower：网络总有效存储量
 ```
 
 - 伪代码
@@ -100,19 +109,21 @@ ChallengeTicket/MaxChallengeTicketSize < ActivePowerInSector/NetworkPower
 ```
 winningTickets = []
 def checkTicketForWinners(partialTickets):
-    for partialTicket in partialTickets:
-        challengeTicket = finalizeTicket(PartialTicket) 
-        if TicketIsWinner(challengeTicket):
-            winningTickets += partialTicket
+  for partialTicket in partialTickets:
+    challengeTicket = finalizeTicket
+                          (PartialTicket) 
+if TicketIsWinner(challengeTicket):
+  winningTickets += partialTicket
 			
-const maxChallengeTicketSize = 2^len(Hash)
+const maxTicketSize = 2^len(Hash)
 
 def TicketIsWinner(challengeTicket):
-    // Check that `ChallengeTicket < Target`
-    return ChallengeTicket * NetworkPower < ActivePowerInSector * MaxChallengeTicketSize
+  // Check that `ChallengeTicket < Target`
+  return ChallengeTicket * NetworkPower
+     < ActPowerInSec * MaxTicketSize
 ```
 
-由于计算效率的关系，EC共识协议在真正实现时做了一些优化，在以后的文章中我们会谈到。
+由于计算效率的关系，EC共识协议在实现时做了一些优化，在以后的文章中我们会谈到。
 
 # 结语
 EC共识利用概率计算实现了无交互式的Leader选举，拥有能同时产生多个块的DAG链结构，这样的结构，有效地提高了链的出块效率，并极大地扩展了整个链的容量。
