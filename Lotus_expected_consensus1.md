@@ -92,7 +92,7 @@ def finalizeTicket(partialTicket):
 
 ```
 const MaxTicketSize = 2^len(Hash)
-ChallengeTicket/MaxTicketSize < Target
+ChallengeTicket/MaxTicketSize<Target
 ```
 
 而选举获胜概率是由miner的有效存储值与整个网络有效存储值的比值决定的，因此公式演变为：
@@ -110,17 +110,17 @@ ChallengeTicket/MaxTicketSize
 
 ```
 winningTickets = []
-def checkTicketForWinners(partialTickets):
+def checkWinners(partialTickets):
   for partialTicket in partialTickets:
-    challengeTicket = finalizeTicket
-                          (PartialTicket) 
+    challengeTicket=finalizeTicket
+                      (PartialTicket) 
 if TicketIsWinner(challengeTicket):
   winningTickets += partialTicket
 			
 const maxTicketSize = 2^len(Hash)
 
 def TicketIsWinner(challengeTicket):
-  // Check that `ChallengeTicket < Target`
+// Check that `ChallengeTicket < Target`
   return ChallengeTicket * NetworkPower
      < ActPowerInSec * MaxTicketSize
 ```
