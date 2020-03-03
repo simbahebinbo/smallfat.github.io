@@ -45,7 +45,8 @@ Lotus链进行选举的流程主要包括：
 post_randomness = VRF(minerID
 || currentBlockHeight 
 || ChainRandomness
-  (currentBlockHeight - SPC_LOOKBACK_POST))
+  (currentBlockHeight
+  - SPC_LOOKBACK_POST))
 ```
 
 由公式可以看出
