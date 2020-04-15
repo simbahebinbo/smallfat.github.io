@@ -1,7 +1,7 @@
 
 # <center>Avalanche共识协议 - 学习笔记2</center>
 
-本文接上一篇学习笔记[Avalanche共识协议 - 学习笔记1](https://github.com/smallfat/smallfat.github.io/edit/master/Avalanche%E7%99%BD%E7%9A%AE%E4%B9%A6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0.md)，继续记录我学习Avalanche协议的成果。
+本文接上一篇学习笔记[Avalanche共识协议 - 学习笔记1](https://smallfat.github.io/Avalanche%E7%99%BD%E7%9A%AE%E4%B9%A6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B01.html)，继续记录我学习Avalanche协议的成果。
 
 ## 方案
 #### Avalanche协议
