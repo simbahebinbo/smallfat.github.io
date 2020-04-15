@@ -6,6 +6,7 @@
 
 # Network
 - [P2P分布式网络协议 - Kademlia解析](P2P分布式网络协议 - Kademlia解析.md)
+- [P2P分布式网络协议 - Kademlia mind graph](kademlia mind graph.md)
 
 # CryptoGraphy
 - [深入浅出零知识证明 1 - 交互式零知识证明：从多项式谈起](交互式零知识证明.md)
