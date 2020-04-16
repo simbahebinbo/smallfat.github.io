@@ -1,6 +1,6 @@
 # Block Chain
-- [Lotus漫谈](IPFS激励层Filecoin - Lotus链总览.md)
-- [Lotus链 - 期望共识原理浅析 一](Lotus_expected_consensus1.md)
+- [Filecoin Lotus链 - 期望共识原理浅析1](IPFS激励层Filecoin - Lotus链总览.md)
+- [Filecoin Lotus链 - 期望共识原理浅析2](Lotus_expected_consensus1.md)
 - [Thinking in hashgraph consensus protocol](Thinking in hashgraph consensus protocol.md)
 - [Avalanche白皮书学习笔记1](Avalanche白皮书学习笔记1.md)
 - [Avalanche白皮书学习笔记2](Avalanche白皮书学习笔记2.md)
