@@ -1,4 +1,4 @@
-# <center>Lotus链 - 期望共识原理浅析 一</center>
+# <center>Lotus链 - 期望共识原理浅析</center>
 
 ## Lotus链的两种共识
 Lotus链是IPFS的激励层，主要作用是激励矿工投入硬件资源，参与Filecoin分布式存储。
