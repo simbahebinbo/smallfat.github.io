@@ -2,6 +2,8 @@
 title: hashgraph共识协议读书笔记
 grammar_cjkRuby: true
 ---
+# <center>hashgraph共识协议读书笔记</center>
+
 ## 目标
 - 提出一个fast,fair,secure的共识协议
 - ABFT：在有条件的异步网络中，能够做到Byzantine Fault Tolarance.
