@@ -4,6 +4,8 @@
 - [Thinking in hashgraph consensus protocol](Thinking in hashgraph consensus protocol.md)
 - [Avalanche白皮书学习笔记1](Avalanche白皮书学习笔记1.md)
 - [Avalanche白皮书学习笔记2](Avalanche白皮书学习笔记2.md)
+- [PBFT协议随解](PBFT协议随解)
+
 
 # Network
 - [P2P分布式网络协议 - Kademlia解析](P2P分布式网络协议 - Kademlia解析.md)
