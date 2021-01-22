@@ -18,15 +18,17 @@ grammar_cjkRuby: true
 ![写数据-图片来自网络](https://gitee.com/string_coder/xiaoshujiang/raw/master/write.jpg)
 
 如上图，写入时
- - 数据会被追加到memtable
+- 元数据会被追加到memtable
  	 - memtable位于内存区域。
 	 - 由此可见，对于写线程来说，写入内存即可返回，大大提高了写的速度
+	 - 内存写满了以后，打包放入“待持久化pipeline”
+- 操作会被写入WAL文件。因此，个人觉得，WAL相当于操作日志。通过这个日志，应该可以回放数据。
+- immutable_memtable持久化的过程，是一个执行LSM算法的过程，同时也是数据按key排序的过程。
+- 上面的写数据图，还应该补充一个cache层。【ps：关于cache，写入和更新的算法需要研究的】
 
 ##### 读数据
 ![读数据-图片来自网络](https://gitee.com/string_coder/xiaoshujiang/raw/master/read.jpg)
 
-### 功能点概览
-![功能点-图片来自网络](https://gitee.com/string_coder/xiaoshujiang/raw/master/functions.png)
-
-
+在读数据时，
 # 重点特性
+![功能点-图片来自网络](https://gitee.com/string_coder/xiaoshujiang/raw/master/functions.png)
