@@ -15,11 +15,9 @@ grammar_cjkRuby: true
 # 架构模块
 ### 架构层次
 ##### 写数据
-
-![架构 - 写数据](https://gitee.com/string_coder_0/xiaoshujiang/raw/master/小书匠/write.jpg)
+![enter description here](https://gitee.com/string_coder/xiaoshujiang/raw/master/write.jpg)
 
 ##### 读数据
-![enter description here](https://gitee.com/string_coder_0/xiaoshujiang/raw/master/小书匠/read.jpg)
 
 ### 功能点概览
 
