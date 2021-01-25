@@ -78,7 +78,9 @@ Block cache是rocksdb用来在内存中存放cache数据的地方，以优化数
 - 在具体实现上
 	- 悲观事务实现了readrepeatable级别的隔离性。
 	- 默认模式下，Put操作会对相关Key加锁，GetForUpdate同样。
+	- 默认模式下，采用MVCC方法，利用log sequence number(LSN)和snapshot实现。
 	- 在2PC模式下，prepare阶段会对所有相关key进行加锁
+
 ###### OptimisticTransactionDB
 - 乐观事务在prepare write阶段，不会持有任何锁；她在commit 阶段进行冲突检测，以便确定没有其他writers修改她正在操作的keys
 - 具体乐观事务是怎么进行冲突检测的？是不是也是通过对所有key加锁的方式？这个还有待探讨
@@ -93,12 +95,13 @@ Block cache是rocksdb用来在内存中存放cache数据的地方，以优化数
 Snapshot（快照）是关于指定数据集合的一个完全可用拷贝，该拷贝包括相应数据在某个时间点（拷贝开始的时间点）的映像
 
 - 原理
- 	- rocksdb在插入每条记录的时候会包含一个sequence number，rocksdb使用该sequence number作为时间标志来区分不同的snapshot
+ 	- rocksdb在插入每条记录的时候会包含一个log sequence number(LSN)，rocksdb使用该sequence number作为时间标志来区分不同的snapshot
  	- 对于整个key-value存储状态，Snapshot提供了一致性只读视图。
 
  
 - 有什么好处
-作用主要是能够进行在线数据备份与恢复
+	- 能够进行在线数据备份与恢复
+	- 在事务处理时，作为数据副本，实现MVCC方法
 
 ###### 使用
 - Snapshots通过方法DB::GetSnapshot()创建
