@@ -54,13 +54,56 @@ Block cache是rocksdb用来在内存中存放cache数据的地方，以优化数
 - Clock Cache
 	- 每个shard维护一个环形队列
 	- cache使用Clock算法来进行Page replacement
-	- 此算法的lock粒度比LRU Cache要好，因为在查找时，无需更新环形队列
+	- 此算法的lock粒度比LRU Cache要好，因为在查找时，无需更新环形队列，故查找无需在shard进行加锁
 
 ### SST File
 - SST文件是一段排序好的表文件，它是实际持久化的数据文件。里面的数据按照key进行排序能方便对其进行二分查找。在SST文件内，还额外包含以下特殊信息：
-	- Bloom Fileter，用于快速判断目标查询key是否存在于当前SST文件内。
+	- Bloom Filter，用于快速判断目标查询key是否存在于当前SST文件内。
 	- Index / Partition Index，SST内部数据块索引文件快速找到数据块的位置。
 
 ### Iteration Operation
+- RocksDB能够支持区间范围内的key迭代器的遍历查找。
 
+### Ingesting SST files
+- 当用户想要快速导入大批量数据到系统内时，可以通过线下创建有效格式的SST文件并导入的方式，而非使用API进行KV值的单独PUT操作。
+
+### Delete Range
+- 区间范围的删除操作，比一个个Key的单独删除调用使用更方便。
+
+### Transaction
+- RocksDB内部提供乐观式的OptimisticTransactionDB和悲观式(事务锁方式)的TransactionDB来支持并发的键值更新操作。
+
+###### TransactionDB
+- 使用TransactionDB时，为了进行冲突检测，所有相关key都会被加锁。
+- 在具体实现上
+	- 悲观事务实现了readrepeatable级别的隔离性。
+	- 默认模式下，Put操作会对相关Key加锁，GetForUpdate同样。
+	- 在2PC模式下，prepare阶段会对所有相关key进行加锁
+###### OptimisticTransactionDB
+- 乐观事务在prepare write阶段，不会持有任何锁；她在commit 阶段进行冲突检测，以便确定没有其他writers修改她正在操作的keys
+- 具体乐观事务是怎么进行冲突检测的？是不是也是通过对所有key加锁的方式？这个还有待探讨
+
+###### 乐观事务与悲观事务的比较
+ 根据上述乐观事务与悲观事务的比较，在并发写场景下，我们可以分析得出：
+- 如果冲突比较多，则悲观事务比较合适，但悲观事务的资源消耗较大；原因是其对所有key进行加锁。
+- 若冲突少，以偶发冲突为主，则乐观事务的性能比较高，资源消耗少；比如一个场景：non-transaction很多，有一些transaction。
+
+### Snapshot
+###### 概念
+Snapshot（快照）是关于指定数据集合的一个完全可用拷贝，该拷贝包括相应数据在某个时间点（拷贝开始的时间点）的映像
+
+- 原理
+ 	- rocksdb在插入每条记录的时候会包含一个sequence number，rocksdb使用该sequence number作为时间标志来区分不同的snapshot
+ 	- 对于整个key-value存储状态，Snapshot提供了一致性只读视图。
+
+ 
+- 有什么好处
+作用主要是能够进行在线数据备份与恢复
+
+###### 使用
+- Snapshots通过方法DB::GetSnapshot()创建
+- 当snapshot不再使用时，需要用DB::RealeaseSnapshot释放
+- ReadOptions::snapshot不为NULL时表示读取数据库的某一个特定版本。如果Snapshot为NULL，则读取数据库的当前版本。
+
+# 读写过程
 
