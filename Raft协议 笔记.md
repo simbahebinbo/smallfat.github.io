@@ -80,6 +80,7 @@ grammar_cjkRuby: true
 
 ### 任务Term
 Term在这里的概念相当于“一轮”的意思。在每个Term里，包含“选举期”和“工作期”两部分(也有可能没有工作期因为选举没有成功或者被中断)。如下图：
+
 ![raft term](https://gitee.com/string_coder/xiaoshujiang/raw/master/raft-term.png)
 
 以下几点是我个人的理解：
