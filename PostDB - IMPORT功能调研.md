@@ -19,5 +19,8 @@ grammar_cjkRuby: true
 - IngestExternalFile
 
 ###### 分布式存储
-
+- tablet
+- pslib
+- raft
+ 
 
