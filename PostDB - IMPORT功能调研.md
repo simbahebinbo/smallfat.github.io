@@ -19,12 +19,12 @@ grammar_cjkRuby: true
 - IngestExternalFile
 
 ###### 分布式存储
-- range内数据的处理
+- range内数据的存储
 	- 使用tablet（类似于cockroach的range概念），负责某个范围内的数据的存储查询
 	- 生成Sst file
 	- 导入Sst file进LSM Tree
 - 数据在cluster内的分发
-	- 
+	- 问题：怎么保证cluster内每个node的数据导入均衡问题
 - raft
  
 ### 异常处理
