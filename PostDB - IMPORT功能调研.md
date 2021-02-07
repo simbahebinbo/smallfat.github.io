@@ -27,7 +27,9 @@ grammar_cjkRuby: true
 	- 导入Sst file进LSM Tree
 - 数据在cluster内的分发
 	- 问题：怎么保证cluster内每个node的数据导入均衡问题
-	- pstore_service TU: TabletManager
+		- pstore_service TU: TabletManager
+		- question: 无序key数组排序
+		- question: 有序key数组快速确定tablet和leader
 - raft
 	- 问题：导入时，巨量数据需要从leader同步到follower，怎么才能保证raft日志不膨胀
 	- 
