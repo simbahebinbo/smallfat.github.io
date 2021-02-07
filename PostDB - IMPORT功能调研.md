@@ -20,7 +20,9 @@ grammar_cjkRuby: true
 
 ###### 分布式存储
 - tablet
+	- 生成Sst file
+	- 导入Sst file进LSM Tree
 - pslib
 - raft
  
-
+### 异常处理
