@@ -19,7 +19,9 @@ grammar_cjkRuby: true
 - 导入速度要比put操作有数量级的提升
 # 基本架构
 
+![基本架构](./attachments/1612839742194.drawio.html)
 
+- 
 
 # 系统设计
 
