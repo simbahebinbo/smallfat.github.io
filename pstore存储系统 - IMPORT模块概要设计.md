@@ -1,5 +1,5 @@
 ---
-title: pstore存储系统 - IMPORT模块概要设计
+title: pstore存储系统 - Feature IMPORT 概要设计
 tags: pstore IMPORT
 renderNumberedHeading: true
 grammar_cjkRuby: true
@@ -11,8 +11,6 @@ grammar_cjkRuby: true
 本模块旨在建立将大规模数据导入pstore的接口和通道，总体目标分为功能与性能两个维度：
 ### 功能
 - 在pstore层提供标准api接口，对具体客户端类型解耦，支持块数据的提交
-- 对健壮性有较高的要求，支持断点续导
-- 支持多任务导入
 - 导入的数据要满足节点上数据基本均衡的要求
 ### 性能
 - 支持大规模数据持续长时间导入
@@ -21,9 +19,19 @@ grammar_cjkRuby: true
 
 ![基本架构](./attachments/1612839742194.drawio.html)
 
-- 
+- 如图，cluster里面有3个node，每个node上有N个tablet。tablet有leader/follower角色
+- client通过调用node server提供的api接口导入数据。该接口以RPC形式提供。
 
 # 系统设计
+### 框图
+### API 接口设计
+### 数据导入
+###### 在tablet上进行导入
+###### 生成sst文件
+###### 导入sst文件进db
+###### 导入数据的同步机制
 
+
+### 异常处理
 
 # 对其他系统的影响
