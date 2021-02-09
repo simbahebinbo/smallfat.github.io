@@ -1,5 +1,5 @@
 ---
-title: pstore存储系统 - Feature IMPORT 概要设计
+title: pstore系统 - Feature： IMPORT bulk data 设计文档
 tags: pstore IMPORT
 renderNumberedHeading: true
 grammar_cjkRuby: true
@@ -30,6 +30,7 @@ grammar_cjkRuby: true
 ###### 生成sst文件
 ###### 导入sst文件进db
 ###### 导入数据的同步机制
+###### 不支持数据导入事务
 
 
 ### 异常处理
