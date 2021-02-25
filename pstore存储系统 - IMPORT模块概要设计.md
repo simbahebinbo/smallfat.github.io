@@ -15,23 +15,25 @@ grammar_cjkRuby: true
 ### 性能
 - 支持大规模数据持续长时间导入
 - 导入速度要比put操作有数量级的提升
-# 基本架构
 
-![基本架构](./attachments/1612839742194.drawio.html)
+
+# 系统设计
+### 系统视图
+
+![系统视图](./attachments/1612839742194.drawio.html)
 
 - 如图，cluster里面有3个node，每个node上有N个tablet。tablet有leader/follower角色
 - client通过调用node server提供的api接口导入数据。该接口以RPC形式提供。
 
-# 系统设计
-### 框图
+### 功能层次
 
 ![功能层次图](./attachments/1612860096787.drawio.html)
 
-### API 接口设计
+### 接口设计
 
 ![绘图](./attachments/1612929222347.drawio.html)
 
-### 数据导入
+### 主要功能
 ###### 数据的均衡导入
 - 在进行数据导入的时候，我们需要把数据平均分布在各个tablet上
 - 通过获取各个tablet的key的范围，把原始数据中对应的key范围的数据，发送到对应的tablet，从而实现数据的均衡导入
@@ -51,6 +53,8 @@ grammar_cjkRuby: true
 	- log的command不是具体数据，而是sst文件位置的描述
 	- follower复制此log以后，在状态机执行此command时，会去leader节点上拉取对应的sst文件，并执行injest操作
 	- follower在上述command执行成功后，再返回成功
+
+### 主要流程
 
 ### 异常处理
  ### 问题
