@@ -76,8 +76,8 @@ service层是pstore server端的服务层，这些service都以protobuf作描述
 ![绘图](./attachments/1614304810177.drawio.html)
 
 ### 异常处理
-- 异常返回
-- 异常定位
+- 异常返回 - 在导入过程中，若出现异常，则立即返回此异常给客户端，并中断之后所有流程，但并不支持对已导入数据的rollback操作。
+- 异常信息 - 包括task id，出错原因，出错时间等。
    
 # 影响和限制
 - 不支持对整个IMPORT操作的事务
