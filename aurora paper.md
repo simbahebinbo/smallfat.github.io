@@ -18,6 +18,8 @@ grammar_cjkRuby: true
 
 # 具体设计
 ### replication
+- 多副本的复制协议：quorom投票选举
+- 
 
 ### segment
 
