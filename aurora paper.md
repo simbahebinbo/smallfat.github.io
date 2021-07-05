@@ -24,12 +24,30 @@ grammar_cjkRuby: true
 ### segment
 
 
+### Redo Log
+###### 结构特性
+- 有序、顺序、形成log chain
+- 每个Log Record都有一个自增序号：LSN
+###### terminologies
+- VCL - Volume Completed LSN: LSN小于VCL的redo log record都是是可用的
+- MTR - Mini Transactions: 事务执行的最小单位。每个mini-transaction都由多个连续的log record（根据需要）组成
+- CPL - Consistency Point LSN: 一个MTR内的最大VCL。因此CPL其实也表示了一个MTR内的最高VCL。为保证事务的原子性，此MTR内低于此LSN的record不能被截断
+- VDL - Volume Durable LSN: volume中小于或等于VCL，且已经成功durable的最大CPL。VDL表示了数据库已经持久化了的处于一致状态的最新位点
+
 ### 存储
-###### priciples
+###### principles
 - 尽量减少写入和读取延迟时间
 - 将大部分的处理操作都移至后台，增强处理性能 
 
-###### 写
+###### 数据一致性
+- 利用gossip协议，在所有peer间进行log record共享和复制，达到数据一致性的目的
+- 没有使用2PC等一致性协议，因为2PC的容错性较差，在大型分布式环境中不适用
+
+###### 事务一致性
+数据库系统中有很多事务，在发生故障时，怎么决定那些TR要丢弃，哪些TR要提交？
+- 为了保证不破坏mini-transaction原子性，所有大于VDL的日志，都需要被截断。
+
+###### 在存储节点上进行写操作
  - 接收redo log recored并将其添加到内存队列中
  - 将redo log record 持久存储到磁盘上并将确认消息发送给数据库实例；
  - 将受到的redo log record进行组织并识别出由于某些batch丢失而导致的redo log record空洞。
@@ -40,11 +58,24 @@ grammar_cjkRuby: true
  - 定期验证data page上的CRC code。
    
 
-![write process in storage node](https://upload-images.jianshu.io/upload_images/7111776-ffc117cda46b3577.png?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
+![write process in storage node](https://pic2.zhimg.com/80/v2-4ec87938c5171ee37374f863af320aa9_720w.jpg)
 
-###### 读
+######  在存储节点上进行读操作
+- 如“数据一致性”一节所述，aurora通过在storage node peer间共享同步数据达到一致性的目的。也因此，正常的node都处于已同步或同步中状态。若不要求绝对的即时查询结果，读可以直接在单分片上进行，不必依据quorom协议
+
+- 例外：若故障恢复的时候data page需要rebuild，这时丢失了运行时状态，才需要基于quorum进行读取。
+
+- 事务的一致性 - TBC，故障恢复时，需要决定那些事务是需要commit，哪些需要rollback
+
+###### 写操作与Redo Log
+
+###### 读操作与Redo Log
+
+
 ###### cache
-### 数据一致性
+
+
+
 ### 故障处理
 - 数据库服务奔溃
 - 存储服务奔溃
