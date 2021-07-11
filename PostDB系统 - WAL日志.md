@@ -9,13 +9,17 @@ grammar_cjkRuby: true
 
 # 功能
 ### 日志间隙管理
+##### record列表
 ##### 间隙发现
+
 ##### 间隙同步
-###### 同步协议
+###### 协议
 - 方案1 - gossip
 - 方案2 - kademlia
-###### 同步实现
-### 日志回放触发
+###### 实现
+- 种子节点
+### 日志回放
+
 
 # 序列图
 
@@ -27,3 +31,22 @@ grammar_cjkRuby: true
 
 
 # 接口
+
+# source code
+### 间隙判定
+- server_wal_write
+	- ps_driver_write_wal		
+		- pswal_write
+			- pswal_page
+		- ps_advance_ncl
+		- ps_advance_ndl
+		- pswal_write_flush
+
+- StartupProcessMain
+	- StartupXLOG
+		- xlog_redo
+			- RecoveryRestartPoint
+		- heap_redo
+			- PageAddItem
+
+### gossip原理与实现
