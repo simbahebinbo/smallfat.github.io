@@ -49,13 +49,12 @@ grammar_cjkRuby: true
 	- 本节主要参考redis的gossip协议
 	- redis gossip协议已经实现了node间的状态同步等功能
 - 业务相关
-	为实现我们的功能，需要在gossip协议的基础上增加几个命令：
-	- LSN_LIST_GAP_PULL - 向其他peers查询: lsn list gap
-	- LSN_LIST_GAP_PUSH - 若其他peer的lsn list相同则向本node发送“相同“回复；若有更完整的list，则向本node发送它的lsn list
-	- WHO_HAS_RECORDS_PULL - 向其他peers查询: 谁有指定的records
-	- WHO_HAS_RECORDS_PUSH - 其他peers回复：我有指定的records
-	- RECORDS_PULL - 向指定peer请求: 请求获取records数据
-	- RECORDS_PUSH - 指定peer push records数据
+	- 为实现peers lsn list信息同步，需要在PING/PONG命令中，增加同步lsn list的功能
+	-为实现records 同步，需要在gossip协议的基础上增加几个命令：
+		- WHO_HAS_RECORDS_PULL - 向其他peers查询: 谁有指定的records
+		- WHO_HAS_RECORDS_PUSH - 其他peers回复：我有指定的records
+		- RECORDS_PULL - 向指定peer请求: 请求获取records数据
+		- RECORDS_PUSH - 指定peer push records数据
 
 
 # 调度设计
@@ -64,7 +63,11 @@ grammar_cjkRuby: true
 - gossip通信协议运行在独立的协程内
 
 # 异常处理
-
+ ### 网络故障
+ - 发生网络故障时，比如网络中断/网络超时等，导致本机缓存的其他peers信息不能及时更新。这样的话，需要给这些缓存信息设置一个有效期，保证信息有效性
+ 
+ ### 主机故障
+- 当主机发生宕机时，在recovery以后，要重新加入到gossip网络, 获取其他peers相关信息，并且重新建立lsn list
 
 # 对其他模块的影响
 无
