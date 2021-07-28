@@ -20,7 +20,8 @@ grammar_cjkRuby: true
 - 在系统正常退出时，保存页存储列表至硬盘系统配置
 - 在系统recovery时，恢复页存储列表。具体恢复流程见异常处理
 - 每次对buffer进行空洞扫描时，将buffer的页区间[first_page_lsn, last_page_lsn]合并到页存储列表
-- 每次调用接口完成持久化后，更新页存储列表：由低至高的第一个区间，使之下标lsn >= NPCL，同时更新NPCL和NCL。NPCL代表已持久化的最老连续页区间的上标。
+- NPCL代表已持久化的最老连续页区间的上标。
+- 每次调用接口完成持久化后，更新页存储列表：由低至高的第一个区间，使之下标lsn >= NPCL，同时更新NPCL和NCL。
 - NCL判定
 	- NCL即存储区间列表由低至高第一个区间item的last_record_lsn
 
