@@ -1,5 +1,5 @@
 ---
-title: PostDB - WAL日志空洞管理模块设计
+title: PostDB - redo日志空洞管理模块设计
 tags: WAL 
 category: /小书匠/日记/2021-07
 renderNumberedHeading: true
