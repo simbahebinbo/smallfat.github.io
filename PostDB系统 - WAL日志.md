@@ -29,7 +29,7 @@ grammar_cjkRuby: true
 
 - 算法
 
-![绘图](./attachments/1626064228154.drawio.html)
+![绘图](./attachments/1627588627602.drawio.html)
 
 - 已有空洞与新空洞
 	- 在持续的空洞扫描过程中，原有空洞可能会出现部分被填充，继而分裂为两个空洞。这种重叠的空洞，在向其他peer寻求数据的时候，注意不要重复请求。
