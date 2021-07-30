@@ -12,22 +12,22 @@ grammar_cjkRuby: true
 
 ![绘图](./attachments/1626283921116.drawio.html)
 
-### 页存储列表
-- 此列表记录了所有已完成持久化的数据页
-- 每个item表示一个连续区域，代表一个或多个连续的页。
-- item包含如下信息：上标,下标, last_record_lsn。上标是连续区域里最后一个page的lsn，下标是连续区域里第一个page的lsn， last_record_lsn是区域里最后一个record的lsn
+### 页存储状态列表
+- 列表记录了所有已完成持久化的数据页(page)的状态
+- 每个列表item包含如下信息：first_page_lsn, range_type, last_record_lsn
+	- first_page_lsn：连续区域里最后一个page的lsn
+	- range_type：区间内是空洞/非空洞
+	- last_record_lsn：区间内最后一个record的lsn
+- 区间的表示：[item1.first_page_lsn, item2.first_page_lsn)
+
 - 在系统初始化时，创建页存储列表
 - 在系统正常退出时，保存页存储列表至硬盘系统配置
 - 在系统recovery时，恢复页存储列表。具体恢复流程见异常处理
-- 每次对buffer进行空洞扫描时，将buffer的页区间[first_page_lsn, last_page_lsn]合并到页存储列表
-- NPCL代表已持久化的最老连续页区间的上标。
-- 每次调用接口完成持久化后，更新页存储列表：由低至高的第一个区间，使之下标lsn >= NPCL，同时更新NPCL和NCL。
-- NCL判定
-	- NCL即存储区间列表由低至高第一个区间item的last_record_lsn
+- 主模块调用本模块时，会传递已持久化的区间[first_page_lsn, last_page_lsn]信息过来，本模块负责将其合并到页存储状态列表
 
-### 空洞发现
+### 页区间合并与空洞发现
 
-- 空洞发现算法
+- 算法
 
 ![绘图](./attachments/1626064228154.drawio.html)
 
