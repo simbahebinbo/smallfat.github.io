@@ -20,7 +20,8 @@ grammar_cjkRuby: true
 - 每个列表item包含如下信息：first_page_lsn, range_type, last_record_lsn
 	- first_page_lsn：连续区域里最后一个page的lsn
 	- range_type：区间内是空洞/非空洞
-	- last_record_lsn：区间内最后一个record的lsn
+	- last_record_lsn：区间内最后一个record的lsn。此字段只在page区间有效。
+	- hole_range_sent：空洞区间是否已发送给空洞填充service。此字段只在hole区间有效。
 - 区间的表示：[item1.first_page_lsn, item2.first_page_lsn)
 
 - 在系统初始化时，创建页存储列表
@@ -42,33 +43,40 @@ grammar_cjkRuby: true
 
 ![绘图](./attachments/1627873970845.drawio.html)
 
+- 不要重复请求同一空洞区间
+	- 页存储状态必须保证：所有已经发送到空洞填充service的空洞区间，状态是正确的（“已发送”状态）；特别是空洞区间被部分填充的场景下，注意细节
+	- 
+
 ### 空洞填充
 ###### 请求状态列表
-
+- 列表记录了所有需要向其他peer请求数据的空洞区间及请求状态
+- 每个列表item包含如下信息：
+	- hole_range - 空洞区间
+	- requested - 是否已经请求
+	- last_request_time - 上次请求时间
+- 列表数据加入：空洞发现service在发现空洞后，通过channel发送到空洞填充service，然后加入到列表中
+- 列表数据删除：当从peer收到某区间数据时，删除列表中对应区间的item
+  
 ###### 请求数据
 - 流程
 
 ![绘图](./attachments/1626068651977.drawio.html)
 
-- peer查找(数据寻址) 
-  - 目前storage node之间采用何种数据同步协议尚未确定，这里假设采用广播
-  - 通过向其他peer广播page区间，找到包含此数据的peer
-  - 不要重复请求同一page区间：在发送请求之前，从请求列表中判断是否已经发送了相应的数据请求
+- 数据寻址
+  - 随机选择peer，进行数据查找
 
 - 获取数据
-	- 向上述peer发送请求(page区间)，获取数据；更新请求列表
-	- 一致性与发送请求的时机：当node A上发现空洞H时，若H所包含的任一record还没有得到确认，则不能向peer发起，即：SGCL >= last_record_lsn时，才能向其他peer发起请求
-
-
-- 超时重传	- 如果获取数据请求超时没有得到回复，则考虑peer disable的可能性；重新进行peer 查找并获取数据
-
-- 填充空洞数据
-	- 调用既有接口，将空洞数据填充到日志持久化存储中
-	- 填充之前先判断存储区块列表中是否包含相应区间，包含则说明已填充完毕，无需再填充
+	- 向上述peer发送请求(空洞区间)，获取数据；更新请求列表
+	
+- 超时重传	- 如果获取数据请求超时没有得到回复，则考虑peer disable的可能性；重新随机选择peer，并发送数据
 
 ###### 数据填充
 
 ![绘图](./attachments/1627887572129.drawio.html)
+
+- 填充空洞数据
+	- 调用既有接口，将空洞数据填充到日志持久化存储中
+	- 填充之前先判断存储区块列表中是否包含相应区间，包含则说明已填充完毕，无需再填充
 
 ### 异常处理
 ###### 主机宕机
