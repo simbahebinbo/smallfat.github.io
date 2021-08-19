@@ -1,5 +1,5 @@
 ---
-title: PostDB - redo日志空洞管理模块设计
+title: PostDB - wal日志空洞管理模块设计
 tags: WAL 
 category: /小书匠/日记/2021-07
 renderNumberedHeading: true
@@ -12,64 +12,76 @@ grammar_cjkRuby: true
 
 ![绘图](./attachments/1626283921116.drawio.html)
 
+###### 模式
+本模块在不同的场景下，分别工作于两种模式下：普通模式/recovery模式
+- 普通模式
+
+- recovery模式
+
+###### 总体功能流图
+
+![绘图](./attachments/1629356917623.drawio.svg)
 
 
-### 页区间合并与空洞发现
-###### 页存储状态列表
-- 列表记录了所有已完成持久化的数据页(page)的状态
-- 每个列表item包含如下信息：first_page_lsn, range_type, last_record_lsn
-	- first_page_lsn：连续区域里最后一个page的lsn
-	- range_type：区间内是空洞/非空洞
-	- last_record_lsn：区间内最后一个record的lsn。此字段只在page区间有效。
-	- hole_range_sent：空洞区间是否已发送给空洞填充service。此字段只在hole区间有效。
-- 区间的表示：[item1.first_page_lsn, item2.first_page_lsn)
+### 存储区间合并与空洞发现
+###### 存储状态列表
+- 列表记录了所有已完成持久化的数据的索引状态
+- 每个列表item包含如下信息：lsn, range_type, sent_hole
+	- lsn：连续区域里第一个lsn
+	- range_type：区间内是空洞/非空洞/结束节点
+	- sent_hole：空洞区间是否已发送给peer。此字段只在hole区间有效
+	- request_id：发送给peer的request id
+- 区间的表示：[item1.lsn, item2.lsn)，初始区间[INIT_VALUE, max(uint64)), INIT_VALUE默认值为0
 
-- 在系统初始化时，创建页存储列表
-- 在系统正常退出时，保存页存储列表至硬盘系统配置
-- 在系统recovery时，恢复页存储列表。具体恢复流程见异常处理
-- 主模块调用本模块时，会传递已持久化的区间[first_page_lsn, last_page_lsn]信息过来，本模块负责将其合并到页存储状态列表
+- 在系统初始化时，创建存储状态列表
+- 在系统正常退出时，保存存储状态列表至硬盘系统配置
+- 在系统recovery时，恢复存储状态列表。具体恢复流程见异常处理
+- 正常模式下，主模块调用本模块时，会传递本次已持久化的lsn区间[first_lsn, last_lsn)和PGCL信息过来，本模块负责将其合并到存储状态列表
+- Recovery模式下，recovery模块调用本模块时，会传递"consistency term/[consistency term的最小起始位置, 最大NWL]"信息。本模块负责对不同的term场景，进行WAL截断处理和日志补齐，并发送补齐状态
 
-###### 页区间合并
+###### 存储区间合并
 
 - 算法
 
 ![绘图](./attachments/1627628363001.drawio.html)
 
 - 已有空洞与新空洞
-	- 在持续的空洞扫描过程中，原有空洞可能会出现部分被填充，继而分裂为两个空洞。这种重叠的空洞，在向其他peer寻求数据的时候，注意不要重复请求。
+	- 在持续的空洞扫描过程中，原有空洞可能会出现部分被填充，继而分裂为两个空洞。这种重叠的空洞，在向其他peer寻求数据的时候，要正确处理hole_sent标志：分裂的空洞将继承原空洞hole_sent标志。
 
 ###### 空洞发现
 - 算法
 
-![绘图](./attachments/1627873970845.drawio.html)
+
 
 - 不要重复请求同一空洞区间
-	- 页存储状态必须保证：所有已经发送到空洞填充service的空洞区间，状态是正确的（“已发送”状态）；特别是空洞区间被部分填充的场景下，注意细节
+	- 所有已经发送到peer的空洞数据请求，hole_sent标记为“已发送”状态；特别是空洞区间被部分填充的场景下，注意细节
 	- 
 
 ### 空洞填充
-###### 请求状态列表
-- 列表记录了所有需要向其他peer请求数据的空洞区间及请求状态
-- 每个列表item包含如下信息：
-	- hole_range - 空洞区间
-	- requested - 是否已经请求
-	- last_request_time - 上次请求时间
-- 列表数据加入：空洞发现service在发现空洞后，通过channel发送到空洞填充service，然后加入到列表中
-- 列表数据删除：当从peer收到某区间数据时，删除列表中对应区间的item
-  
-###### 请求数据
+#### 请求状态列表
+#### 形态
+- 逻辑上为循环列表
+
+###### 字段
+- peer_id
+- peer_storage_status - 各peer存储状态，可能不是最新数据。在recovery模式进入时，一并获取
+- req_list
+	- req_id
+	- req_time
+	- cur_gap_pos
+
+#### 普通模式下的空洞填充  
+###### 空洞发现与空洞数据请求
 - 流程
 
-![绘图](./attachments/1626068651977.drawio.html)
-
+![绘图](./attachments/1627873970845.drawio.html)
 - 数据寻址
-  - 随机选择peer，进行数据查找
-
+	- 为做到peer负载均衡，每个gap第一次进行空洞数据请求，以round robin形式，选择满足特定条件的peer node为目标节点。条件： 
+		- peer_PGCL >= PGCL
+		- 从上一个gap的目标peer为起点开始round robin（不包括此peer node)
 - 获取数据
-	- 向上述peer发送请求(空洞区间)，获取数据；更新请求列表
+	- 向上述被选中的peer发送获取空洞数据请求(参数：空洞区间)后，更新请求状态列表
 	
-- 超时重传	- 如果获取数据请求超时没有得到回复，则考虑peer disabled的可能性；重新随机选择peer，并发送数据
-
 ###### 数据填充
 
 ![绘图](./attachments/1627887572129.drawio.html)
@@ -77,6 +89,19 @@ grammar_cjkRuby: true
 - 填充空洞数据
 	- 调用既有接口，将空洞数据填充到日志持久化存储中
 	- 填充之前先判断存储区块列表中是否包含相应区间，包含则说明已填充完毕，无需再填充
+
+
+#### recovery模式下的空洞填充
+
+#### 请求状态列表
+- 列表记录了所有需要向其他peer请求数据的空洞区间及请求状态
+- 每个列表item包含如下信息：
+	- hole_range - 空洞区间
+	- requested - 是否已经请求
+	- last_request_time - 上次请求时间
+- 列表数据加入：空洞发现service在发现空洞后，通过channel发送到空洞填充service，然后加入到列表中
+- 列表数据删除：当从peer收到某区间数据时，删除列表中对应区间的item
+
 
 ### 异常处理
 ###### 主机宕机
