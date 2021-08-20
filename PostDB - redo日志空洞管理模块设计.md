@@ -82,6 +82,9 @@ grammar_cjkRuby: true
 - 填充空洞数据
 	- 调用既有接口，将空洞数据填充到日志持久化存储中
 	- 填充之前先判断存储区块列表中是否包含相应区间，包含则说明已填充完毕，无需再填充
+	- req_id的生成算法：
+		- 随机hash? 
+		- lsn区间与时间组合？
 
 
 #### recovery模式下的空洞填充
@@ -90,6 +93,7 @@ grammar_cjkRuby: true
 
 ![绘图](./attachments/1627873970845.drawio.html)
 - 数据寻址
+	- 
 	- 为做到peer负载均衡，每个gap第一次进行空洞数据请求，以round robin形式，选择满足特定条件的peer node为目标节点。条件： 
 		- peer_PGCL >= PGCL
 		- 从上一个gap的目标peer为起点开始round robin（不包括此peer node)
