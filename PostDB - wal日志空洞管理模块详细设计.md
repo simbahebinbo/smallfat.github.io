@@ -26,30 +26,11 @@ grammar_cjkRuby: true
 
 ![绘图](./attachments/1629356917623.drawio.svg)
 
-
-### 存储区间合并
-###### 存储状态列表
-- 列表记录了所有已完成持久化的数据的索引状态
-- 每个列表item包含如下信息：lsn, range_type, sent_hole
-	- lsn：连续区域里第一个lsn
-	- range_type：区间内是空洞/非空洞/结束节点
-	- sent_hole：空洞区间是否已发送给peer。此字段只在hole区间有效
-- 区间的表示：[item1.lsn, item2.lsn)，初始区间[INIT_VALUE, max(uint64)), INIT_VALUE默认值为0
-
-- 在系统初始化时，创建存储状态列表
-- 在系统正常退出时，保存存储状态列表至硬盘系统配置
-- 在storage node启动时，恢复存储状态列表。具体恢复流程见异常处理
-
-
-###### 存储区间合并
-
-- 算法
-
-![绘图](./attachments/1627628363001.drawio.html)
-
-- 已有空洞与新空洞
-	- 在持续的空洞扫描过程中，原有空洞可能会出现部分被填充，继而分裂为两个空洞。在向其他peer寻求数据的时候，要正确处理hole_sent标志 - 分裂的空洞将不继承原空洞hole_sent标志，重新变为未发送状态
-
+###### 程序组织
+- 整个gap管理模块为一个独立的后台协程
+- 在系统启动时，此后台协程启动
+- 协程依靠channal接受外部模块调用
+- 协程的工作模式见上节描述
 
 ### 空洞填充
 #### 请求状态列表
@@ -60,51 +41,22 @@ grammar_cjkRuby: true
 
 #### peer存储状态列表
 - peer_id
-- peer_storage_status - 各peer的lsn存储状态，可能不是最新数据。在recovery模式进入时，一并获取
+- peer_storage_status - 各peer的lsn存储状态，可能不是最新数据。
 - term_range - 各peer的term range，其中term id 为本storage node term id。
 	- term
 	- begin_lsn
 	- end_lsn
 
-#### 普通模式下的空洞填充  
 ###### 空洞发现与空洞数据请求
-- 流程
+- normal模式下：流程
 
-![绘图](./attachments/1627873970845.drawio.html)
-- 数据寻址
-	- 为做到peer负载均衡，每个gap第一次进行空洞数据请求，以round robin形式，选择满足特定条件的peer node为目标节点。条件： 
-		- peer_PGCL >= PGCL
-		- 从上一个gap的目标peer为起点开始round robin（不包括此peer node)
-- 获取数据
-	- 向上述被选中的peer发送获取空洞数据请求(参数：空洞区间)后，更新请求状态列表
-- 不要重复请求同一空洞区间
-	- 所有已经发送到peer的空洞数据请求，hole_sent标记为“已发送”状态
-- req_id的生成算法：
-	- 随机hash? 
-	- lsn区间与时间组合？	
-###### 空洞数据填充
+![绘图](./attachments/1630163366297.drawio.svg)
 
-![绘图](./attachments/1627887572129.drawio.html)
-
-- 填充空洞数据
-	- 调用既有接口，将空洞数据填充到日志持久化存储中
-	- 填充之前先判断存储区块列表中是否包含相应区间，包含则说明已填充完毕，无需再填充
-
-
-###### 请求状态检测与处理
-
-![绘图](./attachments/1629432112010.drawio.svg)
-
-- 主要处理以下场景
-	- 某个请求超时 - 继续向下一个peer请求数据
-
-#### recovery模式下的空洞填充
-###### 空洞发现与空洞数据请求
-- 尝试补齐阶段：流程
+- recovery模式下：尝试补齐阶段：流程
 
 ![绘图](./attachments/1629428465960.drawio.svg)
 
-- 最终补齐阶段：流程
+- recovery模式下：最终补齐阶段：流程
 
 ![绘图](./attachments/1629686639906.drawio.svg)
 
@@ -116,7 +68,7 @@ grammar_cjkRuby: true
 - 获取数据
 	- 向上述被选中的peer发送获取空洞数据请求(参数：空洞区间)后，更新请求状态列表
 - 不要重复请求同一空洞区间
-	- 所有已经发送到peer的空洞数据请求，hole_sent标记为“已发送”状态
+	- 发送请求之前，判断是否已经请求过相同区间
 
 ###### 空洞数据填充
 
@@ -126,7 +78,8 @@ grammar_cjkRuby: true
 	- 调用既有接口，将空洞数据填充到日志持久化存储中
 	- 填充之前先判断存储区块列表中是否包含相应区间，包含则说明已填充完毕，无需再填充
 
-###### 请求状态检查及处理
+#### 请求状态检测与处理
+###### recovery模式
 
 ![绘图](./attachments/1629682848099.drawio.svg)
 
@@ -135,6 +88,14 @@ grammar_cjkRuby: true
 	  - 某个请求超时 - 继续向下一个peer请求数据
 	  - 某个请求已经向所有peer都进行了请求，且都超时 - 清除本请求，不再发起请求
 	- 所有请求都处理完毕 - 发送当前补齐点（即NCL）
+
+###### 普通模式
+
+![绘图](./attachments/1629432112010.drawio.svg)
+
+- 主要处理以下场景
+	- 某个请求超时 - 继续向下一个peer请求数据
+
 
 
 ### 异常处理
