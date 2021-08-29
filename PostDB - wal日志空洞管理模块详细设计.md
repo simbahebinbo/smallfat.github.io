@@ -61,7 +61,7 @@ grammar_cjkRuby: true
 ![绘图](./attachments/1629686639906.drawio.svg)
 
 - 数据寻址算法
-  - 取得所有peer node的最新存储状态列表，存入对应的peer_storage_status
+  - 取得所有peer node的最新term区间信息表，存入对应的peer_storage_status
 	- 为做到peer负载均衡，每个gap第一次进行空洞数据请求，以round robin形式，选择满足特定条件的peer node为目标节点。条件：
 		- peer_storage_status包含或者部分包含当前gap区间
 		- 从上一个gap的目标peer为起点开始round robin（不包括此peer node)
@@ -100,12 +100,7 @@ grammar_cjkRuby: true
 
 ### 异常处理
 ###### 主机宕机
-主机宕机有可能造成存储区间列表不能正常退出序列化，从而影响重启后正常的功能。因此需要重新构建存储区间列表
-- 流程
-
-![绘图](./attachments/1626285222578.drawio.html)
-
-- 从持久化日志存储中重构存储状态列表 - 由其他模块完成后，将区间信息传递到本模块，进行重建
+- 因本模块直接从term区间信息表直接读取空洞
 
 ###### 网络故障
 - 本模块在进行空洞填充时会通过网络发送接受日志数据
@@ -119,7 +114,6 @@ grammar_cjkRuby: true
 	- log数据获取 - 指定page区间，从本地取得指定数据
 	- log截断 - 在recovery模式下调用
 - 被调用
-	- 区间合并
 	- 尝试空洞填充
 	- 最终空洞填充
 
