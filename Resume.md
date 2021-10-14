@@ -21,15 +21,18 @@ grammar_cjkRuby: true
 - 有在linux使用C++进行后台开发的丰富经验，熟悉分布式系统原理
 - 熟悉tcp/ip socket异步网络编程模型，对libevent等网络框架有过源码级的研究
 - 良好的软件工程素养：熟悉agile scrum/Git/Gerrit；良好的软件质量意识
-- 了解K8s，docker
+- 熟悉postgres数据库，了解clickhouse/aurora
 - 学习能力强
  
 ### 工作项目经历
 **科蓝软件**
-任职：数据库内核开发工程师
+任职：数据库内核开发工程师(2021年1月 ~ 至今)
 
 项目：postdb
 
+postdb是新一代国产数据库，计算引擎基于postgres，存储核心设计理念与aurora类似。
+
+我在此项目中主要负责存储层的设计开发。
 
 **新加坡ScryInfo无域基金会(成都)** (2018年9月 ~ 2019年8月)
 任职：项目架构师
