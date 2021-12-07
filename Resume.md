@@ -20,20 +20,18 @@ grammar_cjkRuby: true
 ### 个人特点
 - 有在linux使用C/C++进行服务端后台开发的丰富经验
 - 熟悉基于多路复用的异步网络编程，对libevent有过源码级的研究；熟悉基于协程的高并发服务端框架，研究过libgo源码
-- 熟悉分布式系统原理，有分布式数据库内核开发经验
-- 熟悉postgres数据库，了解clickhouse/aurora
+- 有分布式数据库内核开发经验(基于cockroachdb/postgres)，熟悉raft协议，了解postgres/clickhouse/aurora等数据库原理
 - 良好的软件工程素养：熟悉agile scrum/Git/Gerrit；良好的软件质量意识
-- 学习能力强
  
 ### 工作项目经历
-**科蓝软件基础软件开发部**
+**科蓝中国-基础软件部门**
 任职：数据库内核开发(2021年1月 ~ )
 
-项目：postdb
-postdb是新一代国产数据库，计算引擎基于postgres，存储核心设计理念与aurora类似。
+项目：分布式金融级数据库
+该数据库采用
 
 
-**新加坡ScryInfo无域基金会(成都)** (2018年9月 ~ 2019年8月)
+**新加坡ScryInfo无域基金会(成都)-成都** (2018年9月 ~ 2019年8月)
 任职：项目架构师
 
 项目：开源区块链数据协议  [项目开源地址](https://github.com/scryinfo/dp) github ID: smallfat。
