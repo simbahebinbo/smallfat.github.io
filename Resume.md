@@ -78,9 +78,8 @@ JIMI智能客服项目是京东商城最重要的人工智能机器学习项目�
 
 ### 技能
 - 基础语言: C++, GoLang, Solidity
-- 区块链：Filecoin, Ethereum
-- 基础平台：Linux
-- 基础开发框架：Libevent
+- 基础平台：Linux，Ethereum
+- 基础开发框架：Libevent，LibGo
 - 网络协议：Tcp/Http
 - 版本管理、文档和自动化部署工具：Svn/Git/Gerrit
 - 测试框架：Robot-Framework
