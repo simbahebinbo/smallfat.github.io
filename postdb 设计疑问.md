@@ -16,3 +16,4 @@ title: postdb 设计疑问
 			 - 	TrueTime From Google
 			 - 	HLC from CockroachDB
 			 - 	Lamport时钟
+https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt
