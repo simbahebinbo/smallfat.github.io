@@ -13,42 +13,20 @@ grammar_cjkRuby: true
 ![绘图](./attachments/1626283921116.drawio.html)
 
 ###### 模式
-本模块在不同的场景下，分别工作于两种模式下：普通模式/recovery模式
+本模块在不同的场景下，分别工作于两种模式下：普通模式/cluster recovery模式/node recovery模式
 - 普通模式
 	- 正常工作模式下，根据PGCL进行空洞填充
-	- 正常模式下，主模块调用本模块时，会传递本次已持久化的lsn区间[first_lsn, last_lsn)和PGCL信息，本模块负责将其合并到存储状态列表
-- Recovery模式
-	- Recovery模式下，本模块负责对不同阶段，进行空洞填充，并发送补齐点
+- Cluster Recovery模式
+	- 此模式下，本模块负责进行空洞填充，并上报补齐点
 	- 分为尝试日志补齐和最终日志补齐两个阶段。
-		- 尝试日志补齐阶段，recovery模块会传递"consistency_term/[consistency term的最小起始位置, 最大NWL]"信息
-		- 最终日志补齐阶段，recovery模块会传递"最终日志补齐点“信息
+		- 尝试日志补齐阶段，primary节点会传递"consistency_term/[consistency term的最小起始位置, 最大NWL]"信息
+		- 最终日志补齐阶段，primary节点会传递"consistency_term/最终日志补齐点“信息
+- Node Recovery模式
+	- 此模式下，primary节点直接发送“最终日志补齐点”于本模块
+	  
 ###### 总体功能流图
 
 ![绘图](./attachments/1629356917623.drawio.svg)
-
-
-### 存储区间合并
-###### 存储状态列表
-- 列表记录了所有已完成持久化的数据的索引状态
-- 每个列表item包含如下信息：lsn, range_type, sent_hole
-	- lsn：连续区域里第一个lsn
-	- range_type：区间内是空洞/非空洞/结束节点
-	- sent_hole：空洞区间是否已发送给peer。此字段只在hole区间有效
-- 区间的表示：[item1.lsn, item2.lsn)，初始区间[INIT_VALUE, max(uint64)), INIT_VALUE默认值为0
-
-- 在系统初始化时，创建存储状态列表
-- 在系统正常退出时，保存存储状态列表至硬盘系统配置
-- 在storage node启动时，恢复存储状态列表。具体恢复流程见异常处理
-
-
-###### 存储区间合并
-
-- 算法
-
-![绘图](./attachments/1627628363001.drawio.html)
-
-- 已有空洞与新空洞
-	- 在持续的空洞扫描过程中，原有空洞可能会出现部分被填充，继而分裂为两个空洞。在向其他peer寻求数据的时候，要正确处理hole_sent标志 - 分裂的空洞将不继承原空洞hole_sent标志，重新变为未发送状态
 
 
 ### 空洞填充
