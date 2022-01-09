@@ -28,11 +28,9 @@ grammar_cjkRuby: true
 ![绘图](./attachments/1629356917623.drawio.svg)
 
 
-### 空洞填充
-#### 请求状态列表
-- 请求状态记录了gap请求的相关信息，用于对gap请求进行状态控制
-
 ### 空洞发现与空洞数据请求
+- 请求状态列表 - 请求状态记录了gap请求的相关信息，用于对gap请求进行状态控制
+
 - 空洞发现
 	- 从term信息表取得target_lsn以下的空洞列表；
 	- 顶部空洞：[NWL, target_lsn) 
