@@ -18,9 +18,9 @@ grammar_cjkRuby: true
 - Blog: https://smallfat.github.io/
 
 ### 个人特点
-- 有在linux使用C/C++进行服务端后台开发的丰富经验
+- 在linux使用C/C++进行服务端后台开发的丰富经验
 - 熟悉基于协程的高并发服务端框架，研究过libgo源码；熟悉基于多路复用的异步网络编程，对libevent有过源码级的研究；
-- 有分布式数据库内核开发经验(基于cockroachdb/postgres)，熟悉raft协议，熟悉postgres/clickhouse/aurora等数据库原理
+- 有分布式数据库内核开发经验(基于cockroachdb/postgres)
 - 良好的软件工程素养：熟悉agile scrum/Git/Gerrit；良好的软件质量意识
  
 ### 工作项目经历
