@@ -5,7 +5,7 @@ grammar_cjkRuby: true
 ---
 # cluster模式下的单pstore节点数据的backup
 - 原生postgres内有两种进行数据backup的方法
-	- "SELECT pg_start_backup" / "SELECT * FROM pg_stop_backup"
+	- "SELECT * from pg_start_backup" / "SELECT * FROM pg_stop_backup"
 	- pg_basebackup工具
 - 以下以pg_basebackup工具为例，说明cluster模式下backup实现原理：
 	- 目标pstore node的选择方法有两种
@@ -28,3 +28,29 @@ grammar_cjkRuby: true
 
 # original模式下的backup/restore
 postdb还有一个original模式，这个模式下backup/restore的功能要求与原生postgres相同。因此，要考虑与cluster模式下代码的兼容。
+
+
+# 2022.02.15上午 关于backup/restore的会议讨论要点
+### 关于backup/restore工具的产品需求与规划
+- cluster模式下全量backup工具
+	- 针对单pstore节点进行备份: 使用pg_basebackup
+	- 针对整个集群备份：不需要
+- cluster模式下restore工具
+	- 针对单pstore节点进行restore: 使用pg_restore
+	- 针对整个集群的restore：考虑使用另外的工具/脚本，调用pg_restore，逐个实现整个cluster的restore
+- cluster模式下增量backup工具
+	- 参考原生postgres archive机制
+	- 暂时不考虑实现
+- original模式下backup/restore: 行为要与原生postgres一致
+
+### pg_basebackup工具的设计
+- 在primary-node上执行xlogswitch/checkpoint动作，并记录checkpoint 点
+- 在primary-node上，只在备份开始时执行一次xlogswitch；备份结束时，不执行xlogswitch
+- 在pstore节点上执行backup动作，并发送内容到tool侧
+- 在pstore结点上执行backup动作时，不产生任何wal日志，以避免与其他pstore节点上的WAL日志不一致
+- 在目标pstore节点上，checkpoint点后的所有数据不落盘，直至backup完成
+	- 疑问：若长时间不落盘，page buffer会不会满了丢失数据？
+- 备份的数据，截止到checkpoint点 - 由于checkpoint点后的数据不落盘，可以直接拷贝数据目录所有数据
+- 备份的wal，截止到checkpoint点 - 即xlogswitch产生的新的segment file之前的所有xlog文件
+
+### pg_restore工具的设计
