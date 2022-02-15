@@ -18,11 +18,13 @@ grammar_cjkRuby: true
 ![绘图](./attachments/1640158663666.drawio.svg)
 
 
-# cluster模式下的单pstore节点数据的restore
-
-
-
 # cluster模式下单pstore节点WAL日志的archive
+原生postgres已经含有WAL日志的archive功能。cluster模式下，对于单pstore节点的WAL日志的archive，通过设置"archive"相关参数后重启pstore，也能达到相同目的。
+
+# cluster模式下单pstore节点数据的restore
+
+
+![绘图](./attachments/1644887764326.drawio.svg)
 
 # original模式下的backup/restore
-
+postdb还有一个original模式，这个模式下backup/restore的功能要求与原生postgres相同。因此，要考虑与cluster模式下代码的兼容。
