@@ -52,8 +52,7 @@ grammar_cjkRuby: true
 
 
 ![绘图](./attachments/1644887764326.drawio.svg)
-### 问题
-standbymode下的restore，如果pg_wal或者archive没有后续record，或者有invalid record，会切换到stream source等待，造成StartupXLOG无法结束。
+
 # original模式下的backup/restore
 postdb还有一个original模式，这个模式下backup/restore的功能要求与原生postgres相同。因此，要考虑与cluster模式下代码的兼容。
 
@@ -64,17 +63,14 @@ postdb还有一个original模式，这个模式下backup/restore的功能要求�
 - request_xlog_switch - 保证archiver立即能够拷贝当前seg文件，使得backup快速结束
 - insert XLOG_BACKUP_END record - stop_point = insert处lsn，在回放XLOG_BACKUP_END record时设置miniRecoveryPoint/backupStartPoint
 
-### 去掉stop backup中的request_xlog_switch动作引起的问题
-- checkpoint 所在的xlog就不会被backup，也不会被archive
+### 原始archive与basebackup的关系
+- basebackup时，要等到执行backup过程中的xlog都被archive了，才结束backup
+- 这意味着除了checkpoint所在的segment中的record，之后的record都将被忽略
 
-### 去掉stop backup中的XLOG_BACKUP_END引起的问题
-- minRecoveryPoint在回放结束时没有被设置
-
-### restore时的关键变量
+# restore时的关键变量
 - standbymode
 ```
-
-```
+``````
 - minRecoveryPoint
 ```
 	 * minRecoveryPoint is updated to the latest replayed LSN whenever we
@@ -103,7 +99,7 @@ postdb还有一个original模式，这个模式下backup/restore的功能要求�
  * currently recovering using offline XLOG archives. These variables are only
  * valid in the startup process.
  *
- ``````
+```
  
 - InArchiveRecovery
  
@@ -119,4 +115,28 @@ postdb还有一个original模式，这个模式下backup/restore的功能要求�
 ### fsync/fdatasync/fflush
 ### XLogInsertRecord
 # pstore实现：StartupXLOG
+### Standby模式下，StartupXLOG依靠一个循环体完成系统回放的动作
+如果
 
+```
+XLogFileRead xlog.c:3664
+WaitForWALToBecomeForStorageNode xlog.c:14066
+WaitForWALToBecomeAvailable xlog.c:13274
+XLogPageRead xlog.c:13114
+ReadPageInternal xlogreader.c:609
+XLogReadRecord xlogreader.c:330
+ReadRecord xlog.c:4309
+ReadCheckpointRecord xlog.c:9356
+StartupXLOG xlog.c:7744
+StartupProcessMain startup.c:200
+AuxiliaryProcessMain bootstrap.c:517
+co_start_auxiliary_process ps_main.c:4135
+__lambda20::operator() libgo_c.cc:36
+std::_Function_handler::_M_invoke(const std::_Any_data &) functional:2071
+std::function::operator()() const functional:2471
+co::Task::__lambda2::operator() task.cpp:82
+co::Task::Run task.cpp:93
+co::Task::StaticRun task.cpp:124
+make_fcontext make_x86_64_sysv_elf_gas.S:64
+<unknown> 0x0000000000000000
+```
