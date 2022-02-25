@@ -42,7 +42,8 @@ grammar_cjkRuby: true
 
 
 ![绘图](./attachments/1640158663666.drawio.svg)
-
+### 问题
+由于archive/backup/restore在原生的设计中，联系紧密。现在的设计把base backup独立考虑，可能会对archive/restore后续造成影响
 
 # cluster模式下单pstore节点WAL日志的archive
 原生postgres已经含有WAL日志的archive功能。cluster模式下，对于单pstore节点的WAL日志的archive，通过设置"archive"相关参数后重启pstore，也能达到相同目的。
@@ -51,13 +52,14 @@ grammar_cjkRuby: true
 
 
 ![绘图](./attachments/1644887764326.drawio.svg)
-
+### 问题
+standbymode下的restore，如果pg_wal或者archive没有后续record，或者有invalid record，会切换到stream source等待，造成StartupXLOG无法结束。
 # original模式下的backup/restore
 postdb还有一个original模式，这个模式下backup/restore的功能要求与原生postgres相同。因此，要考虑与cluster模式下代码的兼容。
 
 =========================
 
-# 新设计中的几个问题
+# 新设计中的几个疑问
 ### 原始stop backup动作
 - request_xlog_switch - 保证archiver立即能够拷贝当前seg文件，使得backup快速结束
 - insert XLOG_BACKUP_END record - stop_point = insert处lsn，在回放XLOG_BACKUP_END record时设置miniRecoveryPoint/backupStartPoint
