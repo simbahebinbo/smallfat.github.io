@@ -70,7 +70,7 @@ postdb还有一个original模式，这个模式下backup/restore的功能要求�
 # restore时的关键变量
 - standbymode
 ```
-``````
+`````````
 - minRecoveryPoint
 ```
 	 * minRecoveryPoint is updated to the latest replayed LSN whenever we
@@ -116,7 +116,11 @@ postdb还有一个original模式，这个模式下backup/restore的功能要求�
 ### XLogInsertRecord
 # pstore实现：StartupXLOG
 ### Standby模式下，StartupXLOG依靠一个循环体完成系统回放的动作
-如果
+- 根据不同的场景，分别从PGWAL/ARCHIVE/STREAM三个data source获取WAL
+- 有三个场景
+	- SHUTDOWN
+	- CRASH_RECOVERY
+	- ARCHIVE_RECOVERY
 
 ```
 XLogFileRead xlog.c:3664
