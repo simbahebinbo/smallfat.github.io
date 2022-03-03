@@ -60,8 +60,11 @@ pstore node上，在checkpoint完成后，进行备份之前，我们需要保�
 
 
 #### 异常处理
-###### 选定的pstore node不可用
+###### pstore node不可用
+- 在控制数据落盘过程中，若被选中的pstore node(ps1)不可用，则primary等待ps1回放完成时会超时，此时通知pg_basebackup此次backup失败
+
 ###### primary node不可用
+- 在"primary等待ps1回放完成"前不可用：此时可能指定的pstore节点已经处于“落盘开关”关闭状态。故若primary node重新启动后，pstre
 # cluster模式下单pstore节点数据的restore
 
 ![绘图](./attachments/1644887764326.drawio.svg)
