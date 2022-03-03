@@ -33,12 +33,15 @@ grammar_cjkRuby: true
 	- "SELECT * from pg_start_backup" / "SELECT * FROM pg_stop_backup"
 	- pg_basebackup工具
 - 以下以pg_basebackup工具为例，说明cluster模式下backup实现原理：
-	- 目标pstore node的选择方法有两种
-		- 在命令行参数栏指定 - 当前采用方法，但无法兼容原生pg 命令行
-		- 由系统自动选择：收集系统archive mode参数/(ip,sqlport)参数，若有pstore node设置该参数为on/always，则该pstore node为目标pstore node；若没有任何pstore node的archive mode设为on/always，则任选一个pstore node
+	- 目标pstore node的选择方法 - 最先完成Checkpoint动作的pstore node
 	- primary做checkpoint后，需要等待被选择的pstore node完成此动作（即达到NRL）
+	- backup tool通过libpq获取系统拓扑，得到目标pstore node的sqlport
 	- backup tool要使用pstore的ip/sqlport来完成连接到pstore node的动作
 
+### 问题
+- 难以精确保证checkpoint点以后的数据不落盘
+	- 在得到checkpoint点时，实际上quorum个pstore节点已经完成了checkpoint回放
+	- target pstore node控制超过checkpoint点的数据不能落盘的方法： 与checkpoint回放不可避免存在时间差
 
 
 ![绘图](./attachments/1640158663666.drawio.svg)
