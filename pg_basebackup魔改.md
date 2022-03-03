@@ -56,8 +56,10 @@ pstore node上，在checkpoint完成后，进行备份之前，我们需要保�
 6. pg_basebackup在ps1存储结点进行备份
 7. ps1完成备份后，打开落盘开关，继续落盘
 
-#### XLOG文件的备份
-
+#### seg文件的备份
+1. 需要备份checkpoint record所在的seg文件
+2. 由于在backup过程中，checkpoint完成之后，xlog有可能仍然在持续写入。为了保证seg文件在checkpoint record之后无新的record，在pstore回放到checkpoint location时，将此时的seg文件拷贝一个副本作为备份之用。
+	- 此时，由于xlog仍在写入，是否需要在xlog buffer那里控制下落盘？
 
 #### 异常处理
 ###### pstore node不可用
@@ -68,6 +70,11 @@ pstore node上，在checkpoint完成后，进行备份之前，我们需要保�
 # cluster模式下单pstore节点数据的restore
 
 ![绘图](./attachments/1644887764326.drawio.svg)
+
+# cluster模式下集群的restore
+- 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
+- 建议使用script完成这个功能
+- pg_restore是属于pg_dump类的工具，不能用于basebackup类的备份数据
 
 # original模式下的backup/restore
 postdb还有一个original模式，这个模式下backup/restore的功能要求与原生postgres相同。因此，要考虑与cluster模式下代码的兼容。
