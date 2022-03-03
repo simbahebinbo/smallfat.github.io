@@ -22,37 +22,47 @@ grammar_cjkRuby: true
 - 在pstore节点上执行backup动作，并发送内容到tool侧
 - 在pstore结点上执行backup动作时，不产生任何wal日志，以避免与其他pstore节点上的WAL日志不一致
 - 在目标pstore节点上，checkpoint点后的所有数据不落盘，直至backup完成
-	- 疑问：若长时间不落盘，page buffer会不会满了丢失数据？
+	- 疑问：若长时间不落盘，page buffer会不会满了丢失数据？（pstore会卡住）
 - 备份的数据，截止到checkpoint点 - 由于checkpoint点后的数据不落盘，可以直接拷贝数据目录所有数据
 - 备份的wal，截止到checkpoint点 - 即xlogswitch产生的新的segment file之前的所有xlog文件
 
 ### pg_restore工具的设计
-
+==================================================================================================
 # cluster模式下的单pstore节点数据的backup
-- 原生postgres内有两种进行数据backup的方法
-	- "SELECT * from pg_start_backup" / "SELECT * FROM pg_stop_backup"
-	- pg_basebackup工具
-- 以下以pg_basebackup工具为例，说明cluster模式下backup实现原理：
-	- 目标pstore node的选择方法 - 最先完成Checkpoint动作的pstore node
-	- primary做checkpoint后，需要等待被选择的pstore node完成此动作（即达到NRL）
-	- backup tool通过libpq获取系统拓扑，得到目标pstore node的sqlport
-	- backup tool要使用pstore的ip/sqlport来完成连接到pstore node的动作
+#### 实现原理与步骤
 
-### 问题
-- 难以精确保证checkpoint点以后的数据不落盘
-	- 在得到checkpoint点时，实际上quorum个pstore节点已经完成了checkpoint回放
-	- target pstore node控制超过checkpoint点的数据不能落盘的方法： 与checkpoint回放不可避免存在时间差
-
+ 1. backup tool 连接到primary node
+ 2. primary node进行xlog switch，插入XLOGSWITCH日志，生成新的WAL日志文件
+ 3. primary node进行checkpoint
+ 4. 所有pstore node回放checkpoint。相应pstore node控制checkpoint点后的数据落盘。primary node等待pstore节点checkpoint回放完成。
+ 5. primary node向backup tool发送pstore地址和checkpoint location等信息
+ 6. backup tool根据收到的pstore地址取得pstore node 的sqlport
+ 7. backup tool 连接到pstore node
+ 8. 备份数据
+ 9. 备份WAL文件
+	
 
 ![绘图](./attachments/1640158663666.drawio.svg)
-### 问题
-由于archive/backup/restore在原生的设计中，联系紧密。现在的设计把base backup独立考虑，可能会对archive/restore后续造成影响
 
-# cluster模式下单pstore节点WAL日志的archive
-原生postgres已经含有WAL日志的archive功能。cluster模式下，对于单pstore节点的WAL日志的archive，通过设置"archive"相关参数后重启pstore，也能达到相同目的。
+#### 控制数据落盘
+pstore node上，在checkpoint完成后，进行备份之前，我们需要保证checkpoint location点后的数据不再落盘。这是由于FullPageWrite功能被全局关闭了，否则可能造成错误数据。在备份完成后，再打开落盘开关。
 
+###### 步骤
+1. primary node先选择一个active的pstore节点ps1
+2. primary node生成新的checkpoint日志，并在record中记录ps1的node id，其位置lsn - 这里的日志标志应该是一个新的CHECKPOINT类型XLOG_CHECKPOINT_BACKUP，否则pstore无法与其他checkpoint区分
+3. 所有pstore node回放到此日志时， 根据node id判断是否本pstore node，如果是的话，该存储结点的bufmgr里面只要大于这个checkpoint lsn就不落盘，卡住
+4. primary等待ps1回放完成
+5. primary node通知pg_basebackup哪个存储结点被选中了(这里是ps1)
+6. pg_basebackup在ps1存储结点进行备份
+7. ps1完成备份后，打开落盘开关，继续落盘
+
+#### XLOG文件的备份
+
+
+#### 异常处理
+###### 选定的pstore node不可用
+###### primary node不可用
 # cluster模式下单pstore节点数据的restore
-
 
 ![绘图](./attachments/1644887764326.drawio.svg)
 
