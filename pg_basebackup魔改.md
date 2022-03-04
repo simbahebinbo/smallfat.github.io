@@ -3,6 +3,11 @@ title: postdb - bakcup/restore
 tags: 
 grammar_cjkRuby: true
 ---
+# 2022.03.03下午 关于backup/restore的会议讨论要点
+- 针对整个集群的restore：不需要考虑，由dba逐个node实施
+- 针对单pstore节点进行restore: 由于pg_restore是pg_dump系的工具，与basebackup不同，无法使用；考虑自己写个简单工具（脚本）
+- 针对backup过程中，不好精确控制checkpoint点以后不落盘的问题：不再控制数据落盘；比较checkpoint点与pstore节点上的相应最后落盘点是否相等：若是，则允许备份，否则返回备份失败；
+- 针对backup过程中，seg文件存在超过checkpoint点以后的情况，由basebackup工具对checkpoint点以后的数据进行填0处理；相同情况下，sql backup命令则不再被支持；
 # 2022.02.15上午 关于backup/restore的会议讨论要点
 ### 关于backup/restore工具的产品需求与规划
 - cluster模式下全量backup工具
