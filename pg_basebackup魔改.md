@@ -32,7 +32,9 @@ grammar_cjkRuby: true
 - 备份的wal，截止到checkpoint点 - 即xlogswitch产生的新的segment file之前的所有xlog文件
 
 ### pg_restore工具的设计
-==================================================================================================
+
+
+----------
 # cluster模式下的单pstore节点数据的backup
 #### 实现原理与步骤
 
@@ -48,35 +50,27 @@ grammar_cjkRuby: true
 	
 
 ![绘图](./attachments/1640158663666.drawio.svg)
+### 备份数据中的数据一致性
+###### data数据
+- 比较checkpoint点与pstore节点上的相应最后落盘点是否相等：若是，则允许备份，否则返回备份失败；
+- pstore节点上，需要比较的最后落盘点包括：page buffer落盘点/clog落盘点/multixact落盘点
 
-#### 控制数据落盘
-pstore node上，在checkpoint完成后，进行备份之前，我们需要保证checkpoint location点后的数据不再落盘。这是由于FullPageWrite功能被全局关闭了，否则可能造成错误数据。在备份完成后，再打开落盘开关。
-
-###### 步骤
-1. primary node先选择一个active的pstore节点ps1
-2. primary node生成新的checkpoint日志，并在record中记录ps1的node id，其位置lsn - 这里的日志标志应该是一个新的CHECKPOINT类型XLOG_CHECKPOINT_BACKUP，否则pstore无法与其他checkpoint区分
-3. 所有pstore node回放到此日志时， 根据node id判断是否本pstore node，如果是的话，该存储结点的bufmgr里面只要大于这个checkpoint lsn就不落盘，卡住
-4. primary等待ps1回放完成
-5. primary node通知pg_basebackup哪个存储结点被选中了(这里是ps1)
-6. pg_basebackup在ps1存储结点进行备份
-7. ps1完成备份后，打开落盘开关，继续落盘
-
-#### seg文件的备份
+###### seg文件
 1. 需要备份checkpoint record所在的seg文件
-2. 由于在backup过程中，checkpoint完成之后，xlog有可能仍然在持续写入。为了保证seg文件在checkpoint record之后无新的record，在pstore回放到checkpoint location时，将此时的seg文件拷贝一个副本作为备份之用。
-	- 此时，由于xlog仍在写入，是否需要在xlog buffer那里控制下落盘？
+2. 由于在backup过程中，checkpoint完成之后，xlog有可能仍然在持续写入。为了保证seg文件在checkpoint record之后无新的record，由pg_basebackup在seg文件checkpoint点之后位置做0填充。
 
 #### 异常处理
 ###### pstore node不可用
-- 在控制数据落盘过程中，若被选中的pstore node(ps1)不可用，则primary等待ps1回放完成时会超时，此时通知pg_basebackup此次backup失败
+- 在"primary等待ps1回放完成"过程中，若被选中的pstore node(ps1)不可用，则等待会超时，此时通知pg_basebackup此次backup失败
+- 其他时间pstore node不可用，则返回相应的错误给pg_basebackup，通知此次backup失败
 
 ###### primary node不可用
-- 在"primary等待ps1回放完成"前不可用：此时可能指定的pstore节点已经处于“落盘开关”关闭状态。故若primary node重新启动后，pstre
+- backup过程中， pg_basebackup工具与primary node session保持连接的时候，primary node不可用，会导致他们之间的连接断开，backup失败
 # cluster模式下单pstore节点数据的restore
 
 ![绘图](./attachments/1644887764326.drawio.svg)
 
-# cluster模式下集群的restore
+# cluster模式下集群的restore（不考虑）
 - 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
 - 建议使用script完成这个功能
 - pg_restore是属于pg_dump类的工具，不能用于basebackup类的备份数据
@@ -84,7 +78,9 @@ pstore node上，在checkpoint完成后，进行备份之前，我们需要保�
 # original模式下的backup/restore
 postdb还有一个original模式，这个模式下backup/restore的功能要求与原生postgres相同。因此，要考虑与cluster模式下代码的兼容。
 
-=========================
+
+----------
+
 
 # 新设计中的几个疑问
 ### 原始stop backup动作
