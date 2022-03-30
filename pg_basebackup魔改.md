@@ -50,6 +50,9 @@ grammar_cjkRuby: true
 	
 
 ![绘图](./attachments/1640158663666.drawio.svg)
+
+![绘图](./attachments/1648606565569.drawio.svg)
+
 ### 备份数据中的数据一致性
 ###### data数据
 - 比较checkpoint点与pstore节点上的相应最后落盘点是否相等：若是，则允许备份，否则返回备份失败；
