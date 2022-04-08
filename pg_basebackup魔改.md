@@ -35,7 +35,7 @@ grammar_cjkRuby: true
 
 
 ----------
-# cluster模式下的单pstore节点数据的backup
+# cluster模式下的单pstore节点数据的basebackup
 #### 实现原理与步骤
 
  1. backup tool 连接到primary node
@@ -72,6 +72,21 @@ grammar_cjkRuby: true
 # cluster模式下单pstore节点数据的restore
 
 ![绘图](./attachments/1644887764326.drawio.svg)
+
+# cluster模式下集群的incremental backup
+### 需求
+- 在base backup的基础上，实现增量备份
+- 与原有base backup工具统一，方便使用
+- 支持base backup的同时进行增量备份
+- 支持单独进行增量备份
+- 增量备份时，需要指定目的文件夹
+- restore数据时，可利用原生postgresql中的restore_command等选项指定增量备份数据目录
+- 增量备份时，需要进行元数据合法性判断
+
+
+### 实现
+### 命令行支持
+
 
 # cluster模式下集群的restore（不考虑）
 - 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
