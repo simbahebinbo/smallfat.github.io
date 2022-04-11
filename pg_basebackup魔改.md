@@ -32,7 +32,7 @@ grammar_cjkRuby: true
 - 备份的wal，截止到checkpoint点 - 即xlogswitch产生的新的segment file之前的所有xlog文件
 
 ### pg_restore工具的设计
-
+- 使用bash，对backup文件解压至指定目录
 
 ----------
 # cluster模式下的单pstore节点数据的basebackup
@@ -51,7 +51,7 @@ grammar_cjkRuby: true
 
 ![绘图](./attachments/1640158663666.drawio.svg)
 
-![绘图](./attachments/1648606565569.drawio.svg)
+
 
 ### 备份数据中的数据一致性
 ###### data数据
@@ -76,19 +76,19 @@ grammar_cjkRuby: true
 # cluster模式下集群的incremental backup
 ### 需求
 - 在base backup的基础上，实现增量备份
-- 与原有base backup工具统一，方便使用
+- 与原有base backup命令行工具统一，方便使用
 - 支持base backup的同时进行增量备份
 - 支持单独进行增量备份
 - 增量备份时，需要指定目的文件夹
 - restore数据时，可利用原生postgresql中的restore_command等选项指定增量备份数据目录
-- 增量备份时，需要进行元数据合法性判断
-
 
 ### 实现
-### 命令行支持
 
 
-# cluster模式下集群的restore（不考虑）
+
+![绘图](./attachments/1648606565569.drawio.svg)
+
+# cluster模式下集群的restore（经讨论，无需考虑，由用户决定）
 - 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
 - 建议使用script完成这个功能
 - pg_restore是属于pg_dump类的工具，不能用于basebackup类的备份数据
