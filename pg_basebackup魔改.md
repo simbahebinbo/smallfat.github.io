@@ -94,9 +94,17 @@ grammar_cjkRuby: true
 	- backup模块传送到该文件内容backup tool
 	- backup tool将增量备份的文件保存到对应目录
 - base backup与incremental backup的统一
-	- 
-
-
+	- 命令行增加的参数
+		- 备份模式 - base_backup/incremental_backup/联合
+		- 增量备份目标目录 - incremental_backup模式下必须指定
+	- 联合模式下，backup tool端为base_backup/incremental_backup各开启一个线程，每个线程各开启一个background, 各自接受备份数据，互不影响；
+- restore
+	- 利用原生postgresql中的restore_command等选项指定增量备份数据目录
+	- 进行restore 回放时，增量备份数据目录中的xlog文件优先于pg_wal目录中的xlog文件，因此base backup中pg_wal下的被截断的xlog不影响restore replay
+- 终止增量备份
+	- 用户在backup tool端，按下ctrl-c时，终止增量备份
+	- 此时，backup tool发送end_incremental_backup请求给pstore node；pstore node在完成当前seg文件传送后，退出incremental backup模块，关闭background
+	
 ![绘图](./attachments/1648606565569.drawio.svg)
 
 # cluster模式下集群的restore（经讨论，无需考虑，由用户决定）
