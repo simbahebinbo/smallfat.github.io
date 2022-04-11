@@ -83,7 +83,18 @@ grammar_cjkRuby: true
 - restore数据时，可利用原生postgresql中的restore_command等选项指定增量备份数据目录
 
 ### 实现
-
+- 增量备份序列图如下
+- pstore节点的选择
+	- 如果是在base backup的同时进行增量备份，则增量备份也使用与base backup同一pstore node
+	- 若单独进行增量备份，则：任意选择一个pstore node
+- 	- 增量备份的目标文件是：已经写满xlog的seg文件
+- seg文件备份
+	- walwriter在关闭一个seg文件句柄时，通知backup模块进行该文件的备份
+	- backup模块判断此seg文件的max lsn是否已完成PGCL，若没有，则等待
+	- backup模块传送到该文件内容backup tool
+	- backup tool将增量备份的文件保存到对应目录
+- base backup与incremental backup的统一
+	- 
 
 
 ![绘图](./attachments/1648606565569.drawio.svg)
