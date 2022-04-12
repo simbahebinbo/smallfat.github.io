@@ -108,24 +108,36 @@ grammar_cjkRuby: true
 
 - seg文件的备份
 	- incremental backup模块定时收集满足如上条件的seg文件，并发送给backup tool
-	- 因xlog文件永远不删除，故总能保证能够取到符合上述条件的seg文件
+	- 因xlog文件永远不删除，故总能够取到符合上述条件的seg文件
 
 ### restore
-	- 利用原生postgresql中的restore_command等选项指定增量备份数据目录
-	- 进行restore 回放时，增量备份数据目录中的xlog文件优先于pg_wal目录中的xlog文件，因此base backup中pg_wal下的被截断的xlog不影响restore replay
+- 利用原生postgresql中的restore_command等选项指定增量备份数据目录
+- 进行restore 回放时，增量备份数据目录中的xlog文件优先于pg_wal目录中的xlog文件，因此base backup中pg_wal下的被截断(尾部填充为0)的xlog不影响restore replay
 
 ### 终止增量备份
-	- 用户在backup tool端，按下ctrl-c时，终止增量备份
-	- 此时，backup tool发送end_incremental_backup请求给pstore node；pstore node在完成当前seg文件传送后，退出incremental backup模块，关闭background
+- 用户在backup tool端，按下ctrl-c时，终止增量备份
+- 此时，backup tool发送end_incremental_backup请求给pstore node；pstore node在完成当前seg文件传送后，退出incremental backup模块，关闭background
 
 ###### backup命令行扩展
-- base backup与incremental backup的统一
-	- 命令行增加的参数
-		- 备份模式 - base_backup/incremental_backup/组合模式
-		- 增量备份目标目录 - incremental_backup模式下必须指定
-	- 组合模式下，backup tool端为base_backup/incremental_backup各开启一个线程，每个线程各开启一个background, 各自接受备份数据，互不影响；
+- 命令行增加的参数
+	- 备份模式 - base_backup/incremental_backup/组合模式
+	- 增量备份目标目录 - incremental_backup模式下必须指定
+	- checkpoint_redo点 - incremental_backup模式下必须指定
+
 	
 ### 异常情况
+###### 网络故障
+- backup tool与pstore之间的网络故障
+	- backup tool检测到此故障后，清除已备份文件，终止任务，任务失败
+	- pstore上检测到此故障后，清除资源，退出当前background
+
+- backup tool与primary之间的网络故障
+	- backup tool检测到此故障后，终止任务，任务失败
+	- primary上检测到此故障后，清除资源，退出当前background
+
+###### 节点故障
+- primary 宕机
+- pstore 宕机
 
 # cluster模式下集群的restore（经讨论，无需考虑，由用户决定）
 - 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
