@@ -110,11 +110,11 @@ grammar_cjkRuby: true
 	- incremental backup模块定时收集满足如上条件的seg文件，并发送给backup tool
 	- 因xlog文件永远不删除，故总能够取到符合上述条件的seg文件
 
-### restore
+###### restore
 - 利用原生postgresql中的restore_command等选项指定增量备份数据目录
 - 进行restore 回放时，增量备份数据目录中的xlog文件优先于pg_wal目录中的xlog文件，因此base backup中pg_wal下的被截断(尾部填充为0)的xlog不影响restore replay
 
-### 终止增量备份
+###### 终止增量备份
 - 用户在backup tool端，按下ctrl-c时，终止增量备份
 - 此时，backup tool发送end_incremental_backup请求给pstore node；pstore node在完成当前seg文件传送后，退出incremental backup模块，关闭background
 
