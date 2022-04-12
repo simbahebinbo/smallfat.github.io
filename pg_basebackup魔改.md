@@ -91,21 +91,25 @@ grammar_cjkRuby: true
 - 组合模式 - 先进行base backup，然后在此基础上进行incremental backup
 
 ###### 备份逻辑
-- 目标文件：选定的pstore node上已经写满xlog的seg文件  
+- checkpoint redo点 - 在进行base backup后，得到的checkpoint的redo点位
 
-- pstore节点的选择
+- 目标文件 - 选定的pstore node上已经写满xlog的seg文件，且seg文件的max_lsn >= checkpoint.redo点
+
+- 目标pstore节点
 	- 组合模式下 - 选择base backup同一pstore node
 	- 独立模式下 - 任意选择一个当前可用的pstore node
 
-- seg文件的选择
+- seg文件的选择与备份
 	- walwriter在关闭一个seg文件句柄时，通知backup模块进行该文件的备份
-	- backup模块判断此seg文件的max lsn是否已达到PGCL，若没有，则等待
-	
-- seg文件备份
+	- backup模块判断此seg文件的max lsn是否已达到PGCL，若是则传送该文件内容至backup tool，否则等待
 
+### restore
+	- 利用原生postgresql中的restore_command等选项指定增量备份数据目录
+	- 进行restore 回放时，增量备份数据目录中的xlog文件优先于pg_wal目录中的xlog文件，因此base backup中pg_wal下的被截断的xlog不影响restore replay
 
-	- backup模块传送该文件内容至backup tool
-	- backup tool将该文件保存到对应目录
+### 终止增量备份
+	- 用户在backup tool端，按下ctrl-c时，终止增量备份
+	- 此时，backup tool发送end_incremental_backup请求给pstore node；pstore node在完成当前seg文件传送后，退出incremental backup模块，关闭background
 
 ###### backup命令行扩展
 - base backup与incremental backup的统一
@@ -113,12 +117,6 @@ grammar_cjkRuby: true
 		- 备份模式 - base_backup/incremental_backup/组合模式
 		- 增量备份目标目录 - incremental_backup模式下必须指定
 	- 组合模式下，backup tool端为base_backup/incremental_backup各开启一个线程，每个线程各开启一个background, 各自接受备份数据，互不影响；
-- restore
-	- 利用原生postgresql中的restore_command等选项指定增量备份数据目录
-	- 进行restore 回放时，增量备份数据目录中的xlog文件优先于pg_wal目录中的xlog文件，因此base backup中pg_wal下的被截断的xlog不影响restore replay
-- 终止增量备份
-	- 用户在backup tool端，按下ctrl-c时，终止增量备份
-	- 此时，backup tool发送end_incremental_backup请求给pstore node；pstore node在完成当前seg文件传送后，退出incremental backup模块，关闭background
 	
 
 
