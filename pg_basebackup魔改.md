@@ -91,17 +91,24 @@ grammar_cjkRuby: true
 - 组合模式 - 先进行base backup，然后在此基础上进行incremental backup
 
 ###### 备份逻辑
-- checkpoint redo点 - 在进行base backup后，得到的checkpoint的redo点位
-
-- 目标文件 - 选定的pstore node上已经写满xlog的seg文件，且seg文件的max_lsn >= checkpoint.redo点
+- checkpoint redo点
+	- 定义 - 在进行base backup后，得到的checkpoint的redo点位
+	- 点位值取得
+		- 组合模式下，从刚完成的base backup取得
+		- 独立模式下，由命令行参数指定  
 
 - 目标pstore节点
 	- 组合模式下 - 选择base backup同一pstore node
 	- 独立模式下 - 任意选择一个当前可用的pstore node
 
-- seg文件的选择与备份
-	- walwriter在关闭一个seg文件句柄时，通知backup模块进行该文件的备份
-	- backup模块判断此seg文件的max lsn是否已达到PGCL，若是则传送该文件内容至backup tool，否则等待
+- seg文件的选择
+	- 同时满足如下条件的seg文件
+		- seg.max_lsn > checkpoint.redo
+		- seg.max_lsn <= PGCL
+
+- seg文件的备份
+	- incremental backup模块定时收集满足如上条件的seg文件，并发送给backup tool
+	- 因xlog文件永远不删除，故总能保证能够取到符合上述条件的seg文件
 
 ### restore
 	- 利用原生postgresql中的restore_command等选项指定增量备份数据目录
@@ -118,7 +125,7 @@ grammar_cjkRuby: true
 		- 增量备份目标目录 - incremental_backup模式下必须指定
 	- 组合模式下，backup tool端为base_backup/incremental_backup各开启一个线程，每个线程各开启一个background, 各自接受备份数据，互不影响；
 	
-
+### 异常情况
 
 # cluster模式下集群的restore（经讨论，无需考虑，由用户决定）
 - 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
