@@ -119,12 +119,11 @@ grammar_cjkRuby: true
 - 此时，backup tool发送end_incremental_backup请求给pstore node；pstore node在完成当前seg文件传送后，退出incremental backup模块，关闭background
 
 ###### backup命令行扩展
-- 命令行增加的参数
+- 命令行需要增加的参数
 	- 备份模式 - base_backup/incremental_backup/组合模式
 	- 增量备份目标目录 - incremental_backup模式下必须指定
 	- checkpoint_redo点 - incremental_backup模式下必须指定
 
-	
 ### 异常情况
 ###### 网络故障
 - backup tool与pstore之间的网络故障
@@ -137,7 +136,11 @@ grammar_cjkRuby: true
 
 ###### 节点故障
 - primary 宕机
+	- 在backup tool与primary的session存续期间，若primary宕机，backup tool能检测到，此任务会失败
 - pstore 宕机
+	- 在backup tool与pstore的session存续期间，若pstore宕机，backup tool能检测到，此任务会失败
+- backup tool 宕机
+ 	- pstore/primary检测到后，会清除相应资源，退出background
 
 # cluster模式下集群的restore（经讨论，无需考虑，由用户决定）
 - 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
