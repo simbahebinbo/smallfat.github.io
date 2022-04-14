@@ -103,11 +103,11 @@ grammar_cjkRuby: true
 			- 否则取“最新增量备份结束点(end point)”
 
 - 目标pstore节点
-	- 取
+	- 条件：NCL >= PGCL
 
 - seg文件的选择
-	- 同时满足如下条件的seg文件
-		- seg.max_lsn > checkpoint.redo
+	- 已写完同时满足如下条件的seg文件
+		- seg.max_lsn > start_point
 		- seg.max_lsn <= PGCL
 
 - seg文件的备份
@@ -117,10 +117,6 @@ grammar_cjkRuby: true
 ###### restore
 - 利用原生postgresql中的restore_command等选项指定增量备份数据目录
 - 进行restore 回放时，增量备份数据目录中的xlog文件优先于pg_wal目录中的xlog文件，因此base backup中pg_wal下的被截断(尾部填充为0)的xlog不影响restore replay
-
-###### 终止增量备份
-- 用户在backup tool端，按下ctrl-c时，终止增量备份
-- 此时，backup tool发送end_incremental_backup请求给pstore node；pstore node在完成当前seg文件传送后，退出incremental backup模块，关闭background
 
 ###### backup命令行扩展
 - 命令行需要增加的参数
