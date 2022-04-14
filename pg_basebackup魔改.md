@@ -92,16 +92,18 @@ grammar_cjkRuby: true
 
 - 备份控制文件
 	- base backup的checkpoint redo点
-	- 最新的增量备份起始点(start point)/结束点(end point)
+	- 最新增量备份起始点(start point)
+	- 最新增量备份结束点(end point)
 
-- 备份起始点start point
+- 新的备份起始点start point
 	- 定义 - 进行增量备份的起始点
 	- 点位值取得
-		- 由命令行参数指定
+		- 从“备份控制文件”取得
+			- 若“最新增量备份结束点(end point)”不存在，则取base backup的checkpoint redo点
+			- 否则取“最新增量备份结束点(end point)”
 
 - 目标pstore节点
-	- 组合模式下 - 选择base backup同一pstore node
-	- 独立模式下 - 任意选择一个当前可用的pstore node
+	- 取
 
 - seg文件的选择
 	- 同时满足如下条件的seg文件
