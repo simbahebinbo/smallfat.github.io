@@ -139,17 +139,15 @@ grammar_cjkRuby: true
 	- 备份类型 - base_backup/incremental_backup
 	- 备份根目录 - incremental_backup模式下必须指定。具体目录规则参见“备份目录规则”一节
 
-
-
 ### 异常情况
 ###### 网络故障
 - backup tool与pstore之间的网络故障
 	- backup tool检测到此故障后，清除已备份文件，终止任务，任务失败
-	- pstore上检测到此故障后，清除资源，退出当前background
+	- pstore上检测到此故障后，清除资源，退出当前backend
 
 - backup tool与primary之间的网络故障
 	- backup tool检测到此故障后，终止任务，任务失败
-	- primary上检测到此故障后，清除资源，退出当前background
+	- primary上检测到此故障后，清除资源，退出当前backend
 
 ###### 节点故障
 - primary 宕机
@@ -157,9 +155,11 @@ grammar_cjkRuby: true
 - pstore 宕机
 	- 在backup tool与pstore的session存续期间，若pstore宕机，backup tool能检测到，此任务会失败
 - backup tool 宕机
- 	- pstore/primary检测到后，会清除相应资源，退出background
-	- 重启pstore后，需要检查backup tool最后一次backup是否为正常退出；否则清理删除最后一次备份的内容与目录
-		- 
+ 	- pstore/primary检测到后，会清除相应资源，退出backend
+	- 启动backup tool后，需要检查backup tool最后一次backup是否为正常退出；否则清理删除最后一次备份的内容与目录
+		- 具体实现上，backup目录内设置一个backup运行状态文件backup_status		
+		- backup_status的内容：在备份开始前写入此次备份的目录名，并在程序正常退出前清除；
+		- 若启动backup tool时发现backup_status文件包含目录名，则表示此次备份过程中backup tool宕机，此目录需要被清除
 
 # cluster模式下集群的restore（经讨论，无需考虑，由用户决定）
 - 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
