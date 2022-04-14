@@ -88,11 +88,14 @@ grammar_cjkRuby: true
 
 
 ###### 备份逻辑
-- 备份历史文件 - 用于
+- 备份历史文件 - 记录base backup/incremental backup的备份历史
+
 - 增量备份控制文件 - 记录最新的增量备份起始点(start point)/结束点(end point)
+
 - 备份起始点start point
 	- 定义 - 进行增量备份的起始点
-	- 点位值取得	- 由命令行参数指定
+	- 点位值取得
+		- 由命令行参数指定
 
 - 目标pstore节点
 	- 组合模式下 - 选择base backup同一pstore node
