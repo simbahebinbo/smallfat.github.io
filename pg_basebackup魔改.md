@@ -90,7 +90,9 @@ grammar_cjkRuby: true
 ###### 备份逻辑
 - 备份历史文件 - 记录base backup/incremental backup的备份历史
 
-- 增量备份控制文件 - 记录最新的增量备份起始点(start point)/结束点(end point)
+- 备份控制文件
+	- base backup的checkpoint redo点
+	- 最新的增量备份起始点(start point)/结束点(end point)
 
 - 备份起始点start point
 	- 定义 - 进行增量备份的起始点
