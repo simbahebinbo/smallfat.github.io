@@ -76,25 +76,22 @@ grammar_cjkRuby: true
 # cluster模式下集群的incremental backup
 ### 需求
 - 在base backup的基础上，实现增量备份
-- 与原有base backup命令行工具统一，方便使用：base backup工具更名为backup工具，具有base backup/incremental backup两个功能
+- 与原有base backup命令行工具统一，方便使用：base backup工具更名为backup工具，具有base backup/incremental backup两个独立功能
 - 支持单独进行增量备份
 - 备份目录需要单独指定: 整个backup目录需要统一，增量备份目录是其中的一部分
+- 能够让用户方便查看备份历史，包括base backup与incremental backup
 - restore数据：新建c项目pd_restore，统一base backup restore与incremental backup restore
 
 ### 实现
 ###### 增量备份序列图如下
 ![绘图](./attachments/1648606565569.drawio.svg)
 
-###### 备份模式
-- 独立模式 - 在已有base backup的基础上进行incremental backup
-- 组合模式 - 先进行base backup，然后在此基础上进行incremental backup
 
 ###### 备份逻辑
-- checkpoint redo点
-	- 定义 - 在进行base backup后，得到的checkpoint的redo点位
-	- 点位值取得
-		- 组合模式下，从刚完成的base backup取得
-		- 独立模式下，由命令行参数指定  
+- 增量备份控制文件 - 记录最新的增量备份起始点(start point)/结束点(end point)
+- 备份起始点start point
+	- 定义 - 进行增量备份的起始点
+	- 点位值取得	- 由命令行参数指定
 
 - 目标pstore节点
 	- 组合模式下 - 选择base backup同一pstore node
