@@ -106,12 +106,13 @@ grammar_cjkRuby: true
 	- 条件：NCL >= PGCL
 
 - seg文件的选择
-	- 已写完同时满足如下条件的seg文件
-		- seg.max_lsn > start_point
-		- seg.max_lsn <= PGCL
+	- 同时满足如下条件的seg文件，表明已经写完并关闭，且在增量备份范围内，应当备份
+		- seg.end_ptr > start_point
+		- seg.end_ptr <= PGCL
+	- 	
 
 - seg文件的备份
-	- incremental backup模块定时收集满足如上条件的seg文件，并发送给backup tool
+	- incremental backup模块收集满足如上条件的seg文件，并发送给backup tool
 	- 因xlog文件永远不删除，故总能够取到符合上述条件的seg文件
 
 ###### restore
