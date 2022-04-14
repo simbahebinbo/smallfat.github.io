@@ -158,7 +158,8 @@ grammar_cjkRuby: true
 	- 在backup tool与pstore的session存续期间，若pstore宕机，backup tool能检测到，此任务会失败
 - backup tool 宕机
  	- pstore/primary检测到后，会清除相应资源，退出background
-	- 重启pstore后，需要检查
+	- 重启pstore后，需要检查backup tool最后一次backup是否为正常退出；否则清理删除最后一次备份的内容与目录
+		- 
 
 # cluster模式下集群的restore（经讨论，无需考虑，由用户决定）
 - 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
