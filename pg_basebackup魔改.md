@@ -109,15 +109,15 @@ grammar_cjkRuby: true
 	- 同时满足如下条件的seg文件，表明已经写完并关闭，且在增量备份范围内，应当备份
 		- seg.end_ptr > start_point
 		- seg.end_ptr <= PGCL
-	- 	
+	- 满足如下条件的seg文件，表明正在写xlog，需要备份 \[seg.begin_ptr, PGCL)的部分，其他部分填充0
+		- seg.end_ptr > PGCL > seg.begin_ptr
 
 - seg文件的备份
 	- incremental backup模块收集满足如上条件的seg文件，并发送给backup tool
 	- 因xlog文件永远不删除，故总能够取到符合上述条件的seg文件
 
 ###### restore
-- 利用原生postgresql中的restore_command等选项指定增量备份数据目录
-- 进行restore 回放时，增量备份数据目录中的xlog文件优先于pg_wal目录中的xlog文件，因此base backup中pg_wal下的被截断(尾部填充为0)的xlog不影响restore replay
+- 利用pd_restore进行restore；具体请参见本文档pd_restore一节
 
 ###### backup命令行扩展
 - 命令行需要增加的参数
