@@ -76,11 +76,10 @@ grammar_cjkRuby: true
 # cluster模式下集群的incremental backup
 ### 需求
 - 在base backup的基础上，实现增量备份
-- 与原有base backup命令行工具统一，方便使用
-- 支持在base backup的同时进行增量备份
+- 与原有base backup命令行工具统一，方便使用：base backup工具更名为backup工具，具有base backup/incremental backup两个功能
 - 支持单独进行增量备份
-- 增量备份时，需要指定目的文件夹
-- restore数据时，可利用原生postgresql中的restore_command等选项指定增量备份数据目录
+- 备份目录需要单独指定: 整个backup目录需要统一，增量备份目录是其中的一部分
+- restore数据：新建c项目pd_restore，统一base backup restore与incremental backup restore
 
 ### 实现
 ###### 增量备份序列图如下
