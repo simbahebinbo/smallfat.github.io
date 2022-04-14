@@ -86,8 +86,22 @@ grammar_cjkRuby: true
 ###### 增量备份序列图如下
 ![绘图](./attachments/1648606565569.drawio.svg)
 
+###### 备份目录规则
+- 按照如下层级组织目录	
 
-###### 备份逻辑
+``` 
+- backup根目录名(自定义)
+	|
+	|--"base_backup"
+	|	 |--具体的备份内容
+	|--"incremental_backup"
+	     |--"incr_bak_"$DATETIME1
+			  |--具体的备份内容 
+	     |--"incr_bak_"$DATETIME2
+	     |--"incr_bak_"$DATETIME3
+```
+
+###### 备份关键文件
 - 备份历史文件 - 记录base backup/incremental backup的备份历史
 
 - 备份控制文件
@@ -95,6 +109,7 @@ grammar_cjkRuby: true
 	- 最新增量备份起始点(start point)
 	- 最新增量备份结束点(end point)
 
+###### 备份逻辑
 - 新的备份起始点start point
 	- 定义 - 进行增量备份的起始点
 	- 点位值取得
@@ -121,9 +136,10 @@ grammar_cjkRuby: true
 
 ###### backup命令行扩展
 - 命令行需要增加的参数
-	- 备份模式 - base_backup/incremental_backup/组合模式
-	- 增量备份目标目录 - incremental_backup模式下必须指定
-	- checkpoint_redo点 - incremental_backup模式下必须指定
+	- 备份类型 - base_backup/incremental_backup
+	- 备份根目录 - incremental_backup模式下必须指定。具体目录规则参见“备份目录规则”一节
+
+
 
 ### 异常情况
 ###### 网络故障
@@ -142,6 +158,7 @@ grammar_cjkRuby: true
 	- 在backup tool与pstore的session存续期间，若pstore宕机，backup tool能检测到，此任务会失败
 - backup tool 宕机
  	- pstore/primary检测到后，会清除相应资源，退出background
+	- 重启pstore后，需要检查
 
 # cluster模式下集群的restore（经讨论，无需考虑，由用户决定）
 - 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
