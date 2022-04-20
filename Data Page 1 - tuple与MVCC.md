@@ -4,6 +4,8 @@ tags:
 grammar_cjkRuby: true
 ---
 # Storage
+![enter description here](./images/Screenshot_from_2022-04-20_20-51-06.png)
+
 ### Relation
 ### Folks
 ### Files
