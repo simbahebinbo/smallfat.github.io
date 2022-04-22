@@ -35,6 +35,62 @@ grammar_cjkRuby: true
 - 使用bash，对backup文件解压至指定目录
 
 ----------
+# 全局设计
+### 备份目录规则
+- 按照如下层级组织目录	
+
+``` 
+- backup根目录名(自定义)
+	|
+	|--"$DATETIME1_base"
+		 |--具体的备份内容
+	|--"$DATETIME2_incremental"
+                 |--具体的备份内容 
+        |--"$DATETIME3_incremental"
+                 |--具体的备份内容 	
+	|--"$DATETIME4_incremental"	
+                 |--具体的备份内容 	
+	|--"$DATETIME5_base"
+		 |--具体的备份内容
+```
+
+### 备份/恢复关键文件
+- 备份信息文件 - 记录base backup/incremental backup的备份信息
+  - 每次base backup的end point
+  - 每个base backup包含的所有增量备份信息，并按备份时间升序排列
+    - 每次增量备份目录名称
+    - 每次增量备份end point
+	
+# backup工具的命令行及参数
+```
+  -D, --pddata=DIRECTORY 备份文件目标根目录
+  -F, --format=p|t       base backup时的备份文件输出格式 (plain (default), tar)
+  -r, --max-rate=RATE    maximum transfer rate to transfer data directory
+                         (in kB/s, or use suffix "k" or "M")
+  -T, --tablespace-mapping=OLDDIR=NEWDIR
+                         relocate tablespace in OLDDIR to NEWDIR
+      --waldir=WALDIR    location for the write-ahead log directory
+  -X, --wal-method=none|fetch
+                         include required WAL files with specified method
+  -z, --gzip             compress tar output
+  -Z, --compress=0-9     compress tar output with given compression level
+
+
+  -c, --checkpoint=fast|spread
+                         set fast or spread checkpointing
+  -l, --label=LABEL      set base backup label
+  -n, --no-clean         do not clean up after errors
+  -N, --no-sync          do not wait for changes to be written safely to disk
+  -P, --progress         show progress information
+  -v, --verbos
+  -i  --incremental      指此次备份进行增量备份。若没指定此选项，则进行base backup
+  -b  --base=DIRECTORY   若-i 选项已指定，此选项指此次增量备份基于哪次base backup进行
+                         若-i 选项已指定，但没指定此选项，则增量备份基于最后一次base backup进行
+                         若-i 选项没指定，但指定了此选项，则属非法选项
+```
+
+
+
 # cluster模式下的单pstore节点数据的basebackup
 #### 实现原理与步骤
 
@@ -92,13 +148,16 @@ grammar_cjkRuby: true
 ``` 
 - backup根目录名(自定义)
 	|
-	|--"base_backup"
-	|	 |--具体的备份内容
-	|--"incremental_backup"
-	     |--"incr_bak_"$DATETIME1
-			  |--具体的备份内容 
-	     |--"incr_bak_"$DATETIME2
-	     |--"incr_bak_"$DATETIME3
+	|--"$DATETIME1_base"
+		 |--具体的备份内容
+	|--"$DATETIME2_incremental"
+         |--具体的备份内容 
+    |--"$DATETIME3_incremental"
+         |--具体的备份内容 	
+	|--"$DATETIME4_incremental"	
+         |--具体的备份内容 	
+	|--"$DATETIME5_base"
+		 |--具体的备份内容
 ```
 
 ###### 备份关键文件
@@ -161,10 +220,19 @@ grammar_cjkRuby: true
 		- backup_status的内容：在备份开始前写入此次备份的目录名，并在程序正常退出前清除；
 		- 若启动backup tool时发现backup_status文件包含目录名，则表示此次备份过程中backup tool宕机，此目录需要被清除
 
-# cluster模式下集群的restore（经讨论，无需考虑，由用户决定）
-- 由于现在的备份策略是只备份checkpoint点之前的数据，整个集群所有node的数据都会维持在这个点，因此cluster的restore就相当于复制n个备份数据集，并替换各自的配置文件，然后启动primary node
-- 建议使用script完成这个功能
-- pg_restore是属于pg_dump类的工具，不能用于basebackup类的备份数据
+# restore工具
+- 建立一个新的c项目
+- 命令行：
+```
+  pd_restore -b $backup_root_dir -i $incremental_backup_name -t $target_dir
+```
+- 逻辑
+  - 从backup_root_dir中找到备份信息文件backup_information
+  - 从备份信息文件中查找相应的incremental_backup_name，并找出从base backup到incremental_backup_name的备份路径
+  - 验证备份路径中的所有文件的合法性
+  - 保存好相应pstore.conf后，清空target_dir
+  - 按备份时间升序，解压或拷贝原始数据文件和xlog文件至target_dir指定目录
+  - restore完成
 
 # original模式下的backup/restore
 postdb还有一个original模式，这个模式下backup/restore的功能要求与原生postgres相同。因此，要考虑与cluster模式下代码的兼容。
