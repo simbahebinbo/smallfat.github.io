@@ -6,7 +6,14 @@ grammar_cjkRuby: true
 # Storage
 ![enter description here](./images/Screenshot_from_2022-04-20_20-51-06.png)
 
-### Relation
+
+### Relations
+- table
+- sequence
+- materialized view
+- index
+
+
 ### Folks
 ### Files
 ### Pages
