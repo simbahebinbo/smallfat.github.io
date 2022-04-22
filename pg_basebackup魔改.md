@@ -142,31 +142,6 @@ grammar_cjkRuby: true
 ###### 增量备份序列图如下
 ![绘图](./attachments/1648606565569.drawio.svg)
 
-###### 备份目录规则
-- 按照如下层级组织目录	
-
-``` 
-- backup根目录名(自定义)
-	|
-	|--"$DATETIME1_base"
-		 |--具体的备份内容
-	|--"$DATETIME2_incremental"
-         |--具体的备份内容 
-    |--"$DATETIME3_incremental"
-         |--具体的备份内容 	
-	|--"$DATETIME4_incremental"	
-         |--具体的备份内容 	
-	|--"$DATETIME5_base"
-		 |--具体的备份内容
-```
-
-###### 备份关键文件
-- 备份历史文件 - 记录base backup/incremental backup的备份历史
-
-- 备份控制文件
-	- base backup的checkpoint redo点
-	- 最新增量备份起始点(start point)
-	- 最新增量备份结束点(end point)
 
 ###### 备份逻辑
 - 新的备份起始点start point
@@ -220,8 +195,8 @@ grammar_cjkRuby: true
 		- backup_status的内容：在备份开始前写入此次备份的目录名，并在程序正常退出前清除；
 		- 若启动backup tool时发现backup_status文件包含目录名，则表示此次备份过程中backup tool宕机，此目录需要被清除
 
-# 单节点pstore的restore
-- 建立一个新的c项目pd_restore
+# restore工具
+- 建立一个新的c项目
 - 命令行：
 ```
   pd_restore -b $backup_root_dir -i $incremental_backup_name -t $target_dir
