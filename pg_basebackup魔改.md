@@ -220,8 +220,8 @@ grammar_cjkRuby: true
 		- backup_status的内容：在备份开始前写入此次备份的目录名，并在程序正常退出前清除；
 		- 若启动backup tool时发现backup_status文件包含目录名，则表示此次备份过程中backup tool宕机，此目录需要被清除
 
-# restore工具
-- 建立一个新的c项目
+# 单节点pstore的restore
+- 建立一个新的c项目pd_restore
 - 命令行：
 ```
   pd_restore -b $backup_root_dir -i $incremental_backup_name -t $target_dir
