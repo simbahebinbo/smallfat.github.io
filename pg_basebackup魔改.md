@@ -199,7 +199,7 @@ grammar_cjkRuby: true
 - 建立一个新的c项目
 - 命令行：
 ```
-  pd_restore -b $backup_root_dir -i $incremental_backup_name -t $target_dir
+  pd_restore -b $backup_root_dir -i $backup_name -t $target_dir
 ```
 - 逻辑
   - 从backup_root_dir中找到备份信息文件backup_information
