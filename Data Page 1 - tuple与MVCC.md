@@ -32,7 +32,9 @@ grammar_cjkRuby: true
 # Page
 ### Page Layout
 
-![enter description here](./images/Screenshot_from_2022-04-20_16-39-35.png)
+![page inner layout](./images/Screenshot_from_2022-04-20_16-39-35.png)
+
+![table - page - tuple三级关系图](./images/1650894154257.png)
 ### Page Header
 ### Line pointer
 ### Tuple Header
