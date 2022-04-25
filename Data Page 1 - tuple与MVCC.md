@@ -36,8 +36,12 @@ grammar_cjkRuby: true
 
 ![table - page - tuple三级关系图](./images/1650894154257.png)
 ### Page Header
+![](./images/1650895897771.png)
+
 ### Line pointer
 ### Tuple Header
+![fields in tuple header](./images/1650894403055.png)
+
 ### Tuple Data
 
 # MVCC
