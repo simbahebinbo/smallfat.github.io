@@ -4,7 +4,7 @@ tags:
 grammar_cjkRuby: true
 ---
 # Storage
-![enter description here](./images/Screenshot_from_2022-04-20_20-51-06.png)
+![图：数据文件格局](./images/Screenshot_from_2022-04-20_20-51-06.png)
 
 
 ### Relations
@@ -15,9 +15,20 @@ grammar_cjkRuby: true
 
 
 ### Folks
-### Files
-### Pages
+- main
+- fsm
+- vm
 
+### Files
+- 在磁盘上的数据文件路径
+	- 目录：$tablespace_name/$database_oid
+	- 文件
+		- $relation_oid/$relation_oid.1......
+		- $relation_oid.fsm/$relation_oid.fsm.1......
+		- $relation_oid.vm
+
+### Pages
+- 每个数据文件，内部由pages组成。如图“图：数据文件格局”
 # Page
 ### Page Layout
 
