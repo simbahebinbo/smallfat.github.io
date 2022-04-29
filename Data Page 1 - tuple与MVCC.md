@@ -40,10 +40,10 @@ grammar_cjkRuby: true
 
 - pd_lsn - 当前page内最新的数据所对应的xlog lsn
 - pd_checksum
-- pd_flags
-- pd_lower - 指向空闲区起始地址
-- pd_upper - 指向空闲区结束地址
-- pd_special
+- pd_flags - 
+- pd_lower - 指向空闲区起始位置
+- pd_upper - 指向空闲区结束位置
+- pd_special - 指向special space起始位置
 - pd_pagesize_version
 - pd_prune_xid
 
