@@ -38,6 +38,16 @@ grammar_cjkRuby: true
 ### Page Header
 ![page header field图](./images/1650895897771.png)
 
+- pd_lsn
+- pd_checksum
+- pd_flags
+- pd_lower
+- pd_upper
+- pd_special
+- pd_pagesize_version
+- pd_prune_xid
+
+
 ### Line pointer
 - 
 
