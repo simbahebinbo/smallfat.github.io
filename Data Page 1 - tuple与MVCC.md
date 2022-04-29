@@ -38,11 +38,11 @@ grammar_cjkRuby: true
 ### Page Header
 ![page header field图](./images/1650895897771.png)
 
-- pd_lsn
+- pd_lsn - 当前page内最新的数据所对应的xlog lsn
 - pd_checksum
 - pd_flags
-- pd_lower
-- pd_upper
+- pd_lower - 指向空闲区起始地址
+- pd_upper - 指向空闲区结束地址
 - pd_special
 - pd_pagesize_version
 - pd_prune_xid
