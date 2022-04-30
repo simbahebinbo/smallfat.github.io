@@ -63,7 +63,15 @@ grammar_cjkRuby: true
 
 
 ### Line pointer
-- 
+lp_off: tuple距离page头的位移
+lp_flags
+- lp_unused
+- lp_normal
+- lp_redirect
+- lp_dead
+lp_len: tuple长度
+
+
 
 ### Tuple Header
 ![fields in tuple header](./images/1650894403055.png)
