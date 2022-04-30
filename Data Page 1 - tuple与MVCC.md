@@ -49,15 +49,14 @@ grammar_cjkRuby: true
 - pd_pagesize_version
 - pd_prune_xid
 
-
 ### Line pointer
-lp_off: tuple距离page头的位移
-lp_flags
-- lp_unused
-- lp_normal
-- lp_redirect
-- lp_dead
-lp_len: tuple长度
+- lp_off: tuple距离page头的位移
+- lp_flags
+	- lp_unused
+	- lp_normal
+	- lp_redirect
+	- lp_dead
+- lp_len: tuple长度
 
 
 
@@ -65,5 +64,13 @@ lp_len: tuple长度
 ![fields in tuple header](./images/1650894403055.png)
 
 ### Tuple Data
+
+### page write
+- write new tuple 
+	- 在pd_lower后添加pd_linp记录，在pd_upper前新增tuple记录
+	- 并发新增tuple - 
+
+### page read
+
 
 # MVCC
