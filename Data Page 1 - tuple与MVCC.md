@@ -41,20 +41,8 @@ grammar_cjkRuby: true
 - pd_lsn - 当前page内最新的数据所对应的xlog lsn
 - pd_checksum
 - pd_flags 
- ```
- /*
-  * pd_flags contains the following flag bits.  Undefined bits are initialized
-  * to zero and may be used in the future.
-  *
-  * PD_HAS_FREE_LINES is set if there are any LP_UNUSED line pointers before
-  * pd_lower.  This should be considered a hint rather than the truth, since
-  * changes to it are not WAL-logged.
-  *
-  * PD_PAGE_FULL is set if an UPDATE doesn't find enough free space in the
-  * page for its new tuple version; this suggests that a prune is needed.
-  * Again, this is just a hint.
-  */
-```
+	- PD_HAS_FREE_LINES - is set if there are any LP_UNUSED line pointers before pd_lower
+	- PD_PAGE_FULL - is set if an UPDATE doesn't find enough free space in the page for its new tuple version; 
 - pd_lower - 指向空闲区起始位置
 - pd_upper - 指向空闲区结束位置
 - pd_special - 指向special space起始位置
