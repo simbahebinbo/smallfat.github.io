@@ -58,12 +58,19 @@ grammar_cjkRuby: true
 	- lp_dead
 - lp_len: tuple长度
 
+![enter description here](./images/1652062636448.png)
 
 
 ### Tuple Header
+
 ![fields in tuple header](./images/1650894403055.png)
 
+
 ### Tuple Data
+
+![tuple字段位置图](./images/1652062437391.png)
+
+
 
 ### page write
 - write new tuple 
