@@ -100,13 +100,19 @@ Rule 10: If Status(t_xmin) = COMMITTED ∧ Status(t_xmax) = COMMITTED ∧ Snapsh
 ![tuple字段位置对齐](./images/1652062437391.png)
 
 ### Tuple Data
+###### tuple data存储位置
 - tuple data的存储位置: t_hoff表示了data起始处相对于TupleDataHeader起始处的offset
+
+###### TupleDesc
+
+![enter description here](./images/Screenshot_from_2022-05-09_17-53-46.png)
 
 
 ### 插入tuple
 ###### 基本逻辑
 - heap_fill_tuple
 - 在pd_lower后添加pd_linp记录，在pd_upper前新增tuple记录
+
 ###### 并发处理
 
 ### 读取tuple
