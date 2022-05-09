@@ -101,15 +101,11 @@ Rule 10: If Status(t_xmin) = COMMITTED ∧ Status(t_xmax) = COMMITTED ∧ Snapsh
 
 ### Tuple Data
 - tuple data的存储位置: t_hoff表示了data起始处相对于TupleDataHeader起始处的offset
-- 
-
-
 
 
 ### 插入tuple
-- write new tuple 
-	- 在pd_lower后添加pd_linp记录，在pd_upper前新增tuple记录
-	- 并发新增tuple - 
+- 在pd_lower后添加pd_linp记录，在pd_upper前新增tuple记录
+- 并发新增tuple - 
 
 ### 读取tuple
 
