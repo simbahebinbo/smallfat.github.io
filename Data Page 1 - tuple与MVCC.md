@@ -64,11 +64,22 @@ grammar_cjkRuby: true
 ### Tuple Header
 
 ![fields in tuple header](./images/1650894403055.png)
+- HeapTupleFields与DatumTupleFields的关系
+	- union结构
+	- tuple在内存中创建的时候，这时候还没有涉及到transaction以及visibility，因此使用t_datum : DatumTupleFields记录datum的一些属性。
+	- 在某个事务把tuple插入page buffer或者表文件的时候，这时候需要记录transaction id以及visibility，因此将t_datum替换为t_heap : HeapTupleFields
 
+- HeapTupleFields构成可见性系统
+	- t_ctid - 
+	- update 操作
+	- 多版本tuple
+	- t_xmin与t_xmax
+
+![tuple字段位置对齐](./images/1652062437391.png)
 
 ### Tuple Data
 
-![tuple字段位置图](./images/1652062437391.png)
+
 
 
 
