@@ -106,7 +106,7 @@ Rule 10: If Status(t_xmin) = COMMITTED ∧ Status(t_xmax) = COMMITTED ∧ Snapsh
 ### 插入tuple
 - heap_fill_tuple
 - 在pd_lower后添加pd_linp记录，在pd_upper前新增tuple记录
-- 并发新增tuple - 
+- 并发新增tuple
 
 ### 读取tuple
 
