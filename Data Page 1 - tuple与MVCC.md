@@ -70,10 +70,10 @@ grammar_cjkRuby: true
 	- 在某个事务把tuple插入page buffer或者表文件的时候，这时候需要记录transaction id以及visibility，因此将t_datum替换为t_heap : HeapTupleFields
 
 - HeapTupleFields构成可见性系统
-	- t_ctid : ItemPointerData -  composed by {ip_blkid, ip_posid}, ip_blkid tells us which block, ip_posid tells us which entry in  the linp (ItemIdData) array we want.
-	- update 操作 - 
-	- 多版本tuple
-	- t_xmin与t_xmax
+	- t_ctid : ItemPointerData -  composed by {ip_blkid, ip_posid}, ip_blkid tells us which block, ip_posid tells us which entry in  the linp (ItemIdData) array we want. 此处,block指table中的一个page; ip_posid指的是linp数组中的索引
+	- update 操作 - 相当于delete操作+insert操作
+	- 多版本tuple - t_ctid总是指向下一个有效的tuple物理位置，即{page index, linp index}
+	- t_xmin与t_xmax - 当前tuple中的insert操作者transaction id与delete 操作者transaction id
 
 ![tuple字段位置对齐](./images/1652062437391.png)
 
