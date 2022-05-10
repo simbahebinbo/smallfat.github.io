@@ -104,9 +104,12 @@ Rule 10: If Status(t_xmin) = COMMITTED ∧ Status(t_xmax) = COMMITTED ∧ Snapsh
 - tuple data的存储位置: t_hoff表示了data起始处相对于TupleDataHeader起始处的offset
 
 ###### TupleDesc
+- 如下图，tupledesc描述了table中每个字段的属性
 
 ![enter description here](./images/Screenshot_from_2022-05-09_17-53-46.png)
 
+###### tuple data在HeapTupleHeaderData后的组织
+- 见heap_fill_tuple
 
 ### 插入tuple
 ###### 基本逻辑
