@@ -117,7 +117,11 @@ Rule 10: If Status(t_xmin) = COMMITTED ∧ Status(t_xmax) = COMMITTED ∧ Snapsh
 - 在pd_lower后添加pd_linp记录，在pd_upper前新增tuple记录
 
 ###### 并发处理
-
+- 几个问题
+	- 同时对同一个table的同一行数据的update，怎么处理
+	- 同时对同一个table的insert，怎么处理
+	- 同时对同一个table的delete，怎么处理	
+	
 ### 读取tuple
 
 
