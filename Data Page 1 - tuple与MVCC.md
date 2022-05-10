@@ -121,8 +121,5 @@ Rule 10: If Status(t_xmin) = COMMITTED ∧ Status(t_xmax) = COMMITTED ∧ Snapsh
 	- 同时对同一个table的同一行数据的update，怎么处理
 	- 同时对同一个table的insert，怎么处理
 	- 同时对同一个table的delete，怎么处理	
-	
-### 读取tuple
-
-
-# MVCC
+- 这里的并发，不仅仅包括事务级别的并发，还包括engineering thread角度的并发，因此有两个维度
+- 留待研究lock这个主题时，再来深入分析
