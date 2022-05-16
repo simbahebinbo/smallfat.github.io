@@ -30,7 +30,7 @@ grammar_cjkRuby: true
 
 项目：科蓝分布式金融级数据库
 本项目基于quorum协议的分布式金融级数据库
-我主要负责cluster recovery子系统的开发
+我主要负责cluster recovery子系统的设计开发测试
 
 **自主创业**(2018年10月 ~ 2020年12月)
 从事过区块链方向的投资，也承接过区块链软件(solidity)、数据库软件（clickhouse）等类型的外包开发
