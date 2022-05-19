@@ -120,7 +120,7 @@ grammar_cjkRuby: true
 
 ###### seg文件
 1. 需要备份\[startpoint, endpoint)所在的seg文件
-2. 由于在backup过程中，checkpoint完成之后，xlog有可能仍然在持续写入。为了保证seg文件在checkpoint record之后无新的record，由pg_basebackup在seg文件checkpoint点之后位置做0填充。
+2. 由于在backup过程中，checkpoint完成之后，xlog有可能仍然在持续写入。为了保证seg文件在checkpoint endpoint之后无新的record，由pg_backup在seg文件checkpoint endpoint点之后位置做0填充。
 
 #### 异常处理
 ###### pstore node不可用
