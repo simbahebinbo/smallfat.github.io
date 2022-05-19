@@ -111,8 +111,9 @@ grammar_cjkRuby: true
 
 ### 备份数据中的数据一致性
 ###### data数据
-- 在pstore节点上直接做checkpoint, 保存此次checkpoint的start/end point. end point之前的数据能够确保已经持久化
-- 比较checkpoint点与pstore节点上的相应最后落盘点是否相等：若是，则允许备份，否则返回备份失败；
+- 在pstore节点上直接做checkpoint, 保存此次checkpoint的\[startpoint, endpoint). end point之前的数据能够确保已经达到当前pgcl且已经持久化
+- 在完成checkpoint后，在basebackup期间，不应该让checkpoint后的数据落盘
+	- 比较checkpoint点与pstore节点上的相应最后落盘点是否相等：若是，则允许备份，否则返回备份失败；
 - pstore节点上，需要比较的最后落盘点包括：page buffer落盘点/clog落盘点/multixact落盘点
 - 在pstore进行xlog replay时，若drop table/checkpoint_online/checkpoint_shutdown，需要wait pgcl到达当前点，才开始replay
 
