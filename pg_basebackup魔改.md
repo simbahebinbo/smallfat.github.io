@@ -111,7 +111,7 @@ grammar_cjkRuby: true
 
 ### 备份数据中的数据一致性
 ###### data数据
-- 在pstore节点上直接做checkpoint, 保存此次checkpoint的\[startpoint, endpoint). end point之前的数据能够确保已经达到当前pgcl且已经持久化
+- 在pstore节点上直接做checkpoint, 保存此次checkpoint的\[startpoint, endpoint). end point之前的数据能够确保已经达到当前pgcl且已经落盘
 - 在完成checkpoint后，在base backup期间，不应该让checkpoint后的数据落盘
 	- 比较pstore节点上的最后落盘点，若大于checkpoint end point，则备份失败；
 	- 
