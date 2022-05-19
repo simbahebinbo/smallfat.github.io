@@ -45,11 +45,11 @@ grammar_cjkRuby: true
 	|--"$DATETIME1_base"
 		 |--具体的备份内容
 	|--"$DATETIME2_incremental"
-                 |--具体的备份内容 
-        |--"$DATETIME3_incremental"
-                 |--具体的备份内容 	
+         |--具体的备份内容 
+    |--"$DATETIME3_incremental"
+         |--具体的备份内容 	
 	|--"$DATETIME4_incremental"	
-                 |--具体的备份内容 	
+         |--具体的备份内容 	
 	|--"$DATETIME5_base"
 		 |--具体的备份内容
 ```
