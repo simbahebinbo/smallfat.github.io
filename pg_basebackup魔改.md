@@ -116,7 +116,7 @@ grammar_cjkRuby: true
 	- 比较pstore节点上的最后落盘点，若大于checkpoint end point，则备份失败，返回错误；
 	- base backup期间的落盘控制
 		- 大于checkpoint end point的数据不能落盘
-		- page buffer落盘点/clog落盘点/multixact落盘点
+		- 需要判断的点位：page buffer落盘点/clog落盘点/multixact落盘点
 - 在pstore进行xlog replay时，若drop table/checkpoint_online/checkpoint_shutdown，需要wait pgcl到达当前点，才开始replay
 
 ###### seg文件
