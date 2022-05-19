@@ -111,8 +111,10 @@ grammar_cjkRuby: true
 
 ### 备份数据中的数据一致性
 ###### data数据
+- 在pstore节点上直接做checkpoint, 保存此次checkpoint的start/end point. end point之前的数据能够确保已经持久化
 - 比较checkpoint点与pstore节点上的相应最后落盘点是否相等：若是，则允许备份，否则返回备份失败；
 - pstore节点上，需要比较的最后落盘点包括：page buffer落盘点/clog落盘点/multixact落盘点
+- 在pstore进行xlog replay时，若drop table/checkpoint_online/checkpoint_shutdown，需要wait pgcl到达当前点，才开始replay
 
 ###### seg文件
 1. 需要备份checkpoint record所在的seg文件
@@ -120,11 +122,12 @@ grammar_cjkRuby: true
 
 #### 异常处理
 ###### pstore node不可用
-- 在"primary等待ps1回放完成"过程中，若被选中的pstore node(ps1)不可用，则等待会超时，此时通知pg_basebackup此次backup失败
-- 其他时间pstore node不可用，则返回相应的错误给pg_basebackup，通知此次backup失败
+- 在"primary等待ps1回放完成"过程中，若被选中的pstore node(ps1)不可用，则等待会超时，此时通知pg_backup此次backup失败
+- 其他时间pstore node不可用，则返回相应的错误给pg_backup，通知此次backup失败
 
 ###### primary node不可用
-- backup过程中， pg_basebackup工具与primary node session保持连接的时候，primary node不可用，会导致他们之间的连接断开，backup失败
+- backup过程中， pg_backup工具与primary node session保持连接的时候，primary node不可用，会导致他们之间的连接断开，backup失败
+
 # cluster模式下单pstore节点数据的restore
 
 ![绘图](./attachments/1644887764326.drawio.svg)
@@ -166,7 +169,7 @@ grammar_cjkRuby: true
 	- 因xlog文件永远不删除，故总能够取到符合上述条件的seg文件
 
 ###### restore
-- 利用pd_restore进行restore；具体请参见本文档pd_restore一节
+- 利用pd_restore进行restore；具体请参见本文档restore工具一节
 
 ###### backup命令行扩展
 - 命令行需要增加的参数
