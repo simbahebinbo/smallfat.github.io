@@ -117,10 +117,9 @@ grammar_cjkRuby: true
 	- base backup期间的落盘控制
 		- 大于checkpoint end point的数据不能落盘
 		- 需要判断的点位：page buffer落盘点/clog落盘点/multixact落盘点
-- 在pstore进行xlog replay时，若drop table/checkpoint_online/checkpoint_shutdown，需要wait pgcl到达当前点，才开始replay
 
 ###### seg文件
-1. 需要备份checkpoint record所在的seg文件
+1. 需要备份\[startpoint, endpoint)所在的seg文件
 2. 由于在backup过程中，checkpoint完成之后，xlog有可能仍然在持续写入。为了保证seg文件在checkpoint record之后无新的record，由pg_basebackup在seg文件checkpoint点之后位置做0填充。
 
 #### 异常处理
