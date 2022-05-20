@@ -95,15 +95,11 @@ grammar_cjkRuby: true
 # cluster模式下的单pstore节点数据的basebackup
 #### 实现原理与步骤
 
- 1. backup tool 连接到primary node
- 2. primary node进行xlog switch，插入XLOGSWITCH日志，生成新的WAL日志文件
- 3. primary node进行checkpoint
- 4. 所有pstore node回放checkpoint。相应pstore node控制checkpoint点后的数据落盘。primary node等待pstore节点checkpoint回放完成。
- 5. primary node向backup tool发送pstore地址和checkpoint location等信息
- 6. backup tool根据收到的pstore地址取得pstore node 的sqlport
- 7. backup tool 连接到pstore node
- 8. 备份数据
- 9. 备份WAL文件
+ 1. backup tool 连接到primary node，选择当前NCL最大的pstore节点，获取pstore地址信息
+ 2. backup tool根据收到的pstore地址取得pstore node 的sqlport
+ 3. backup tool 连接到pstore node
+ 4. 备份数据
+ 5. 备份WAL文件
 	
 
 ![绘图](./attachments/1640158663666.drawio.svg)
