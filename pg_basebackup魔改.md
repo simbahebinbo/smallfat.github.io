@@ -132,8 +132,11 @@ grammar_cjkRuby: true
 - backup过程中， pg_backup工具与primary node session保持连接的时候，primary node不可用，会导致他们之间的连接断开，backup失败
 
 # cluster模式下单pstore节点数据的restore
-### 去除checkpoint/xlogswitch改动点
-###### checkpoint.redo
+### 去除checkpoint/xlogswitch所导致的方案改动和疑点
+- checkpoint.redo之前能确定数据已落盘 
+	- base backup以checkpoint.redo作为backup的目标xlog end point
+	
+
 
 ![绘图](./attachments/1644887764326.drawio.svg)
 
