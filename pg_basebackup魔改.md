@@ -138,6 +138,7 @@ grammar_cjkRuby: true
 - 去除xlogswitch
    - 原方案 - xlogswitch后的xlog文件在被base backup读取时，无其他access操作
    - 问题 - 无xlogswitch时，xlog在被写入的过程中，被base backup读取，内容有无问题？
+   - 方案 - backup完成后，检查crc checksum
 
 - 去除backup_lable
    - 原方案 - backup_lable文件用来记录单次base backup的具体信息
@@ -184,6 +185,8 @@ grammar_cjkRuby: true
 - seg文件的备份
 	- incremental backup模块收集满足如上条件的seg文件，并发送给backup tool
 	- 因xlog文件永远不删除，故总能够取到符合上述条件的seg文件
+	
+- checksum last	
 
 ###### restore
 - 利用pd_restore进行restore；具体请参见本文档restore工具一节
