@@ -32,7 +32,7 @@ grammar_cjkRuby: true
 - 备份的wal，截止到checkpoint点 - 即xlogswitch产生的新的segment file之前的所有xlog文件
 
 ### pg_restore工具的设计
-- 使用bash，对backup文件解压至指定目录
+- 新建项目pd_restore
 
 ----------
 # 全局设计
@@ -133,9 +133,22 @@ grammar_cjkRuby: true
 
 # cluster模式下单pstore节点数据的restore
 ### 去除checkpoint/xlogswitch所导致的方案改动和疑点
-- checkpoint.redo之前能确定数据已落盘 
-	- base backup以checkpoint.redo作为backup的目标xlog end point
-	
+- 去除checkpoint record
+	- checkpoint.redo之前能确定数据已落盘，base backup以checkpoint.redo作为backup的目标xlog end point
+	- 做基于base backup的restore时
+		- 原方案 - 从checkpoint.redo点进行replay
+		- 问题 - ReadRecord(checkpoint.redo)失败，无法从checkpoint.redo replay，pstore启动失败退出
+		- 新方案 - 如果ReadRecord(checkpoint.redo)失败且处于restore阶段，系统正常进入hotstandby模式
+- 去除xlogswitch
+   - 原方案 - xlogswitch后的xlog文件在被base backup读取时，无其他access操作
+   - 问题 - 无xlogswitch时，xlog在被写入的过程中，被base backup读取，内容有无问题？
+
+- 去除backup_lable
+   - 原方案 - backup_lable文件用来记录单次base backup的具体信息
+   - 问题 - 去除backup_lable后，pstore启动restore时信息从何得来
+		- 备份根目录下backup_info记录的是在本目录所有进行backup的信息，不适合作为pstore在restore时的信息
+   - 新方案 - 在使用pd_restore工具时，从backup_info内生成一份单次backup信息文件(backup_lable)到目标节点上？
+   	
 
 
 ![绘图](./attachments/1644887764326.drawio.svg)
