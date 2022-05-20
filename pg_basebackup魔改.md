@@ -56,10 +56,11 @@ grammar_cjkRuby: true
 
 ### 备份/恢复关键文件
 - 备份信息文件 - 记录base backup/incremental backup的备份信息
-  - 每次base backup的end point
+  - 每次base backup的\[start_point, end point)
   - 每个base backup包含的所有增量备份信息，并按备份时间升序排列
-    - 每次增量备份目录名称
-    - 每次增量备份end point
+  	- 每次增量备份目录名称
+    - 每次增量备份\[start_point, end point)
+  -	最后一次base backup名称  
 	
 # backup工具的命令行及参数
 ```
@@ -131,6 +132,8 @@ grammar_cjkRuby: true
 - backup过程中， pg_backup工具与primary node session保持连接的时候，primary node不可用，会导致他们之间的连接断开，backup失败
 
 # cluster模式下单pstore节点数据的restore
+### 去除checkpoint/xlogswitch改动点
+###### checkpoint.redo
 
 ![绘图](./attachments/1644887764326.drawio.svg)
 
