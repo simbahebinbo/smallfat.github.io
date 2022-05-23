@@ -32,7 +32,7 @@ grammar_cjkRuby: true
 - 备份的wal，截止到checkpoint点 - 即xlogswitch产生的新的segment file之前的所有xlog文件
 
 ### pg_restore工具的设计
-- 新建项目pd_restore
+- 使用bash，对backup文件解压至指定目录
 
 ----------
 # 全局设计
@@ -56,11 +56,10 @@ grammar_cjkRuby: true
 
 ### 备份/恢复关键文件
 - 备份信息文件 - 记录base backup/incremental backup的备份信息
-  - 每次base backup的\[start_point, end point)
+  - 每次base backup的end point
   - 每个base backup包含的所有增量备份信息，并按备份时间升序排列
-  	- 每次增量备份目录名称
-    - 每次增量备份\[start_point, end point)
-  -	最后一次base backup名称  
+    - 每次增量备份目录名称
+    - 每次增量备份end point
 	
 # backup工具的命令行及参数
 ```
@@ -95,11 +94,15 @@ grammar_cjkRuby: true
 # cluster模式下的单pstore节点数据的basebackup
 #### 实现原理与步骤
 
- 1. backup tool 连接到primary node，选择当前NCL最大的pstore节点，获取pstore地址信息
- 2. backup tool根据收到的pstore地址取得pstore node 的sqlport
- 3. backup tool 连接到pstore node
- 4. 备份数据
- 5. 备份WAL文件
+ 1. backup tool 连接到primary node
+ 2. primary node进行xlog switch，插入XLOGSWITCH日志，生成新的WAL日志文件
+ 3. primary node进行checkpoint
+ 4. 所有pstore node回放checkpoint。相应pstore node控制checkpoint点后的数据落盘。primary node等待pstore节点checkpoint回放完成。
+ 5. primary node向backup tool发送pstore地址和checkpoint location等信息
+ 6. backup tool根据收到的pstore地址取得pstore node 的sqlport
+ 7. backup tool 连接到pstore node
+ 8. 备份数据
+ 9. 备份WAL文件
 	
 
 ![绘图](./attachments/1640158663666.drawio.svg)
@@ -128,25 +131,6 @@ grammar_cjkRuby: true
 - backup过程中， pg_backup工具与primary node session保持连接的时候，primary node不可用，会导致他们之间的连接断开，backup失败
 
 # cluster模式下单pstore节点数据的restore
-### 去除checkpoint/xlogswitch所导致的方案改动和疑点
-- 去除checkpoint record
-	- checkpoint.redo之前能确定数据已落盘，base backup以checkpoint.redo作为backup的目标xlog end point
-	- 做基于base backup的restore时
-		- 原方案 - 从checkpoint.redo点进行replay
-		- 问题 - ReadRecord(checkpoint.redo)失败，无法从checkpoint.redo replay，pstore启动失败退出
-		- 新方案 - 如果ReadRecord(checkpoint.redo)失败且处于restore阶段，系统正常进入hotstandby模式
-- 去除xlogswitch
-   - 原方案 - xlogswitch后的xlog文件在被base backup读取时，无其他access操作
-   - 问题 - 无xlogswitch时，xlog在被写入的过程中，被base backup读取，内容有无问题？
-   - 方案 - backup完成后，检查crc checksum
-
-- 去除backup_lable
-   - 原方案 - backup_lable文件用来记录单次base backup的具体信息
-   - 问题 - 去除backup_lable后，pstore启动restore时信息从何得来
-		- 备份根目录下backup_info记录的是在本目录所有进行backup的信息，不适合作为pstore在restore时的信息
-   - 新方案 - 在使用pd_restore工具时，从backup_info内生成一份单次backup信息文件(backup_lable)到目标节点上？
-   	
-
 
 ![绘图](./attachments/1644887764326.drawio.svg)
 
@@ -186,8 +170,6 @@ grammar_cjkRuby: true
 - seg文件的备份
 	- incremental backup模块收集满足如上条件的seg文件，并发送给backup tool
 	- 因xlog文件永远不删除，故总能够取到符合上述条件的seg文件
-	
-- checksum last	
 
 ###### restore
 - 利用pd_restore进行restore；具体请参见本文档restore工具一节
