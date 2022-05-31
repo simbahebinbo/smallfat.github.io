@@ -109,10 +109,11 @@ grammar_cjkRuby: true
 ### 备份数据中的数据一致性
 ###### data数据
 - 在pstore节点上直接做checkpoint, checkpoint结束点作为本次backup的start_point， 该start_point点之前的数据能够确保已经达到当前pgcl且已经落盘
-- 在完成checkpoint后，在base backup期间，block start_point点后的数据落盘
+- 在完成checkpoint后，开始备份文件之前，为保证数据文件的完整性应block相应数据落盘，直到备份文件完成（因目前FPW功能在postdb中是禁用的，xlog中不带有page image）
 	- base backup期间的落盘控制
-		- 大于checkpoint end point的数据不能落盘
-		- 需要判断的点位：page buffer落盘点/clog落盘点/multixact落盘点
+		- 对buffer进行block的条件：lsn > backup.start_point
+		- 对数据buffer进行block需要判断的点位：data page buffer落盘点/clog落盘点/multixact落盘点
+		- 
 
 ###### seg文件
 1. 需要备份\[startpoint, endpoint)所在的seg文件
