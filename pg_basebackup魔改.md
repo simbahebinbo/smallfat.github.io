@@ -167,7 +167,7 @@ grammar_cjkRuby: true
 ![绘图](./attachments/1648606565569.drawio.svg)
 
 
-###### 备份
+###### backup
 - 备份起始点start point
 	- 定义 - 进行增量备份的起始点
 	- 点位值取得 - 从“备份控制文件 backup_info”取得
@@ -185,9 +185,9 @@ grammar_cjkRuby: true
 	- 满足如下条件的WAL文件，表明正在写xlog，需要备份 \[seg.begin_ptr, PGCL)的部分，其他部分填充0
 		- seg.end_ptr > PGCL > seg.begin_ptr
 
-- seg文件的备份
-	- incremental backup模块收集满足如上条件的seg文件，并发送给backup tool
-	- 因xlog文件永远不删除，故总能够取到符合上述条件的seg文件
+- WAL文件的传送
+	- incremental backup模块收集满足如上条件的WAL文件，并发送给backup tool
+	- 因pstore节点上WAL文件永远不删除，故总能够取到符合上述条件的WAL文件
 	
 - checksum last	
 
