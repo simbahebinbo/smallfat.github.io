@@ -130,24 +130,7 @@ grammar_cjkRuby: true
 - backup过程中， pg_backup工具与primary node session保持连接的时候，primary node不可用，会导致他们之间的连接断开，backup失败
 
 # cluster模式下单pstore节点数据的restore
-### 去除checkpoint/xlogswitch所导致的方案改动和疑点
-- 去除checkpoint record
-	- checkpoint.redo之前能确定数据已落盘，base backup以checkpoint.redo作为backup的目标xlog end point
-	- 做基于base backup的restore时
-		- 原方案 - 从checkpoint.redo点进行replay
-		- 问题 - ReadRecord(checkpoint.redo)失败，无法从checkpoint.redo replay，pstore启动失败退出
-		- 新方案 - 如果ReadRecord(checkpoint.redo)失败且处于restore阶段，系统正常进入hotstandby模式
-- 去除xlogswitch
-   - 原方案 - xlogswitch后的xlog文件在被base backup读取时，无其他access操作
-   - 问题 - 无xlogswitch时，xlog在被写入的过程中，被base backup读取，内容有无问题？
-   - 方案 - backup完成后，检查crc checksum
-
-- 去除backup_lable
-   - 原方案 - backup_lable文件用来记录单次base backup的具体信息
-   - 问题 - 去除backup_lable后，pstore启动restore时信息从何得来
-		- 备份根目录下backup_info记录的是在本目录所有进行backup的信息，不适合作为pstore在restore时的信息
-   - 新方案 - 在使用pd_restore工具时，从backup_info内生成一份单次backup信息文件(backup_lable)到目标节点上？
-   	
+  	
 
 
 ![绘图](./attachments/1644887764326.drawio.svg)
@@ -239,6 +222,24 @@ postdb还有一个original模式，这个模式下backup/restore的功能要求�
 
 
 # 新设计中的几个疑问
+### 去除checkpoint/xlogswitch所导致的方案改动和疑点
+- 去除checkpoint record
+	- checkpoint.redo之前能确定数据已落盘，base backup以checkpoint.redo作为backup的目标xlog end point
+	- 做基于base backup的restore时
+		- 原方案 - 从checkpoint.redo点进行replay
+		- 问题 - ReadRecord(checkpoint.redo)失败，无法从checkpoint.redo replay，pstore启动失败退出
+		- 新方案 - 如果ReadRecord(checkpoint.redo)失败且处于restore阶段，系统正常进入hotstandby模式
+- 去除xlogswitch
+   - 原方案 - xlogswitch后的xlog文件在被base backup读取时，无其他access操作
+   - 问题 - 无xlogswitch时，xlog在被写入的过程中，被base backup读取，内容有无问题？
+   - 方案 - backup完成后，检查crc checksum
+
+- 去除backup_lable
+   - 原方案 - backup_lable文件用来记录单次base backup的具体信息
+   - 问题 - 去除backup_lable后，pstore启动restore时信息从何得来
+		- 备份根目录下backup_info记录的是在本目录所有进行backup的信息，不适合作为pstore在restore时的信息
+   - 新方案 - 在使用pd_restore工具时，从backup_info内生成一份单次backup信息文件(backup_lable)到目标节点上？
+
 ### 原始stop backup动作
 - request_xlog_switch - 保证archiver立即能够拷贝当前seg文件，使得backup快速结束
 - insert XLOG_BACKUP_END record - stop_point = insert处lsn，在回放XLOG_BACKUP_END record时设置miniRecoveryPoint/backupStartPoint
