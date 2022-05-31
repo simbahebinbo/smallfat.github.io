@@ -165,14 +165,10 @@ grammar_cjkRuby: true
 ###### 增量备份序列图如下
 
 ![绘图](./attachments/1648606565569.drawio.svg)
-
-
 ###### backup
 - 备份起始点start point
 	- 定义 - 进行增量备份的起始点
-	- 点位值取得 - 从“备份控制文件 backup_info”取得
-		- 若“最新增量备份结束点(end point)”不存在，则取base backup的start_point点
-		- 否则取“最新增量备份结束点(end point)”
+	- 点位值取得 - 从“备份控制文件 backup_info”取得，具体取得方式见“backup工具的命令行及参数”一节
 
 - 目标pstore节点的选择
 	- 条件：pstore.NCL >= pstore.PGCL
@@ -189,7 +185,7 @@ grammar_cjkRuby: true
 	- incremental backup模块收集满足如上条件的WAL文件，并发送给backup tool
 	- 因pstore节点上WAL文件永远不删除，故总能够取到符合上述条件的WAL文件
 	
-- checksum last	
+- WAL文件的合法性验证
 
 ###### restore
 - 利用pd_restore进行restore；具体请参见本文档restore工具一节
