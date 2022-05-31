@@ -95,11 +95,11 @@ grammar_cjkRuby: true
 # cluster模式下的单pstore节点数据的basebackup
 #### 实现原理与步骤
 
- 1. backup tool 连接到primary node，选择当前NCL最大的pstore节点，获取pstore地址信息
- 2. backup tool根据收到的pstore地址取得pstore node 的sqlport
- 3. backup tool 连接到pstore node
- 4. 备份数据
- 5. 备份WAL文件
+ 1. backup tool 连接到primary node，选择当前NRL最大的pstore节点，获取pstore地址信息
+ 2. backup tool 连接到pstore node
+ 3. 备份数据
+ 4. 备份WAL文件
+ 5. 验证WAL文件的合法性（为什么要验证：xlogswitch被remove掉以后，存在多线程同时读写wal文件的可能）
 	
 
 ![绘图](./attachments/1640158663666.drawio.svg)
@@ -108,9 +108,8 @@ grammar_cjkRuby: true
 
 ### 备份数据中的数据一致性
 ###### data数据
-- 在pstore节点上直接做checkpoint, 保存此次checkpoint的\[startpoint, endpoint). end point之前的数据能够确保已经达到当前pgcl且已经落盘
-- 在完成checkpoint后，在base backup期间，不应该让checkpoint后的数据落盘
-	- 比较pstore节点上的最后落盘点，若大于checkpoint end point，则备份失败，返回错误；
+- 在pstore节点上直接做checkpoint, checkpoint结束点作为本次backup的start_point， 该start_point点之前的数据能够确保已经达到当前pgcl且已经落盘
+- 在完成checkpoint后，在base backup期间，block start_point点后的数据落盘
 	- base backup期间的落盘控制
 		- 大于checkpoint end point的数据不能落盘
 		- 需要判断的点位：page buffer落盘点/clog落盘点/multixact落盘点
