@@ -113,7 +113,9 @@ grammar_cjkRuby: true
 	- base backup期间的落盘控制
 		- 对buffer进行block的条件：lsn > backup.start_point
 		- 对数据buffer进行block需要判断的点位：data page buffer落盘点/clog落盘点/multixact落盘点
-		- 
+		- 如果在backup过程中，replay碰到drop table操作，需要等待backup完成。原因是：drop table操作直接操作数据文件，会造成backup文件的损坏
+- 在备份数据文件完成之后，备份WAL文件之前，取backup.end_point = MIN(NCL, PGCL)
+
 
 ###### seg文件
 1. 需要备份\[startpoint, endpoint)所在的seg文件
