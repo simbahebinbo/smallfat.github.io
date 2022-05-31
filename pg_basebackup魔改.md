@@ -109,17 +109,17 @@ grammar_cjkRuby: true
 ### 备份数据中的数据一致性
 ###### data数据
 - 在pstore节点上直接做checkpoint, checkpoint结束点作为本次backup的start_point， 该start_point点之前的数据能够确保已经达到当前pgcl且已经落盘
-- 在完成checkpoint后，开始备份文件之前，为保证数据文件的完整性应block相应数据落盘，直到备份文件完成（因目前FPW功能在postdb中是禁用的，xlog中不带有page image）
+- 在完成checkpoint后，开始备份文件之前，为保证数据文件的完整性应block相应数据落盘，直到备份数据文件完成（因目前FPW功能在postdb中是禁用的，xlog中不带有page image）
 	- base backup期间的落盘控制
 		- 对buffer进行block的条件：lsn > backup.start_point
 		- 对数据buffer进行block需要判断的点位：data page buffer落盘点/clog落盘点/multixact落盘点
-		- 如果在backup过程中，replay碰到drop table操作，需要等待backup完成。原因是：drop table操作直接操作数据文件，会造成backup文件的损坏
-- 在备份数据文件完成之后，备份WAL文件之前，取backup.end_point = MIN(NCL, PGCL)
+		- 如果在backup过程中，replay时产生drop table操作，需要等待backup完成。原因是：drop table操作直接操作数据文件，会造成backup文件的损坏
+- 在备份数据文件完成之后，备份WAL文件之前，取backup.end_point = MIN(NCL, PGCL)，由此形成了backup区间 \[start_point, end_point)
 
 
-###### seg文件
-1. 需要备份\[startpoint, endpoint)所在的seg文件
-2. 由于在backup过程中，checkpoint完成之后，xlog有可能仍然在持续写入。为了保证seg文件在checkpoint endpoint之后无新的record，由pg_backup在seg文件checkpoint endpoint点之后位置做0填充。
+###### WAL文件
+1. 需要备份\[start_point, end_point)所在的WAL文件
+2. 由于在backup过程中，checkpoint完成之后，xlog有可能仍然在持续写入。为了保证seg文件在backup end_point之后无新的record，在WAL文件中backup end_point点之后位置做0填充。
 
 #### 异常处理
 ###### pstore node不可用
