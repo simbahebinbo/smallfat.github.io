@@ -167,22 +167,22 @@ grammar_cjkRuby: true
 ![绘图](./attachments/1648606565569.drawio.svg)
 
 
-###### 备份逻辑
-- 新的备份起始点start point
+###### 备份
+- 备份起始点start point
 	- 定义 - 进行增量备份的起始点
-	- 点位值取得
-		- 从“备份控制文件”取得
-			- 若“最新增量备份结束点(end point)”不存在，则取base backup的checkpoint redo点
-			- 否则取“最新增量备份结束点(end point)”
+	- 点位值取得 - 从“备份控制文件 backup_info”取得
+		- 若“最新增量备份结束点(end point)”不存在，则取base backup的start_point点
+		- 否则取“最新增量备份结束点(end point)”
 
-- 目标pstore节点
-	- 条件：NCL >= PGCL
+- 目标pstore节点的选择
+	- 条件：pstore.NCL >= pstore.PGCL
 
-- seg文件的选择
-	- 同时满足如下条件的seg文件，表明已经写完并关闭，且在增量备份范围内，应当备份
+- 目标WAL文件
+	- 同时满足如下条件的WAL文件，表明已经完成写入，文件句柄已被关闭，在增量备份范围内，应当备份
 		- seg.end_ptr > start_point
-		- seg.end_ptr <= PGCL
-	- 满足如下条件的seg文件，表明正在写xlog，需要备份 \[seg.begin_ptr, PGCL)的部分，其他部分填充0
+		- seg.end_ptr <= PGCL		
+		
+	- 满足如下条件的WAL文件，表明正在写xlog，需要备份 \[seg.begin_ptr, PGCL)的部分，其他部分填充0
 		- seg.end_ptr > PGCL > seg.begin_ptr
 
 - seg文件的备份
