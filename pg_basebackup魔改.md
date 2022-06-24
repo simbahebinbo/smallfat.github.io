@@ -214,6 +214,35 @@ grammar_cjkRuby: true
   - 按备份时间升序，解压或拷贝原始数据文件和xlog文件至target_dir指定目录
   - restore完成
 
+# 验证backup文件的完整性
+使用verifybackup工具对backup结果文件进行完整性验证
+
+###  验证工具的命令行
+```
+pd_verifybackup verifies a backup against the backup manifest.
+
+Usage:
+  pd_verifybackup [OPTION]... BACKUPDIR
+
+Options:
+  -e, --exit-on-error         exit immediately on error
+  -i, --ignore=RELATIVE_PATH  ignore indicated path
+  -m, --manifest-path=PATH    use specified path for manifest
+  -n, --no-parse-wal          do not try to parse WAL files
+  -q, --quiet                 do not print any output, except for errors
+  -s, --skip-checksums        skip checksum verification
+  -w, --wal-directory=PATH    use specified path for WAL files
+  -b, --backupname=BACKUP_NAME the source backup name that you want to restore from
+  -t, --target=DIRECTORY the target directory that you want to restore to
+  -V, --version               output version information, then exit
+  -?, --help                  show this help, then exit
+
+```
+
+### 验证流程
+
+
+
 # original模式下的backup/restore
 postdb还有一个original模式，这个模式下backup/restore的功能要求与原生postgres相同。因此，要考虑与cluster模式下代码的兼容。
 
