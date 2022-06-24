@@ -241,6 +241,7 @@ Options:
 
 ### 验证流程
 
+![绘图](./attachments/1656050860474.drawio.svg)
 
 
 # original模式下的backup/restore
