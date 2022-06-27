@@ -4,10 +4,14 @@ tags:
 grammar_cjkRuby: true
 ---
 # 2022.06.24下午 关于backup/restore的会议讨论要点
-- 待实现
-	- backup时，增量备份的xlog文件也应该保存为类似manifest形式的文件，并存放在相应的增量备份目录中
-- 待研究
-    - 为什么原生xlog
+- 在原生pg中，为什么xlog的verification逐个record进行校验，而基础备份的数据以文件为单位进行checksum校验？
+	- 我的猜测
+		- 逐个record验证crc，验证的是每个record的有效性，即该record可以正常回放
+		- 以文件为单位验证checksum，验证的是这个文件在备份后的完整性
+
+- backup/restore的安全性方面的考虑
+ 	- 我的理解
+	- 后续方案
 
 # 2022.03.03下午 关于backup/restore的会议讨论要点
 - 针对整个集群的restore：不需要考虑，由dba逐个node实施
