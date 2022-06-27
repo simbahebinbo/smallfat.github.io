@@ -4,14 +4,25 @@ tags:
 grammar_cjkRuby: true
 ---
 # 2022.06.24下午 关于backup/restore的会议讨论要点
-- 在原生pg中，为什么xlog的verification逐个record进行校验，而基础备份的数据以文件为单位进行checksum校验？
-	- 我的猜测
-		- 逐个record验证crc，验证的是每个record的有效性，即该record可以正常回放
-		- 以文件为单位验证checksum，验证的是这个文件在备份后的完整性
+- 在原生pg_verifybackup中，为什么xlog的verification逐个record进行校验，而不是以文件为单位进行crc校验？
+	- 我的推测
+		- 基本功能
+			- 逐个record验证crc，验证的是每个record的有效性，即该record是否可以正常回放
+			- 以文件为单位验证checksum，验证的是这个文件在备份后的完整性
+		- 验证效果			
+			- 备份文件在备份目录中发生损坏，两种方式都能检测到
+			- 若在备份时读取xlog文件内容出现问题（与xlog真实文件内容不一致），此时采用“以文件为单位进行crc校验”这种方法可以通过校验，但record数据实际上已经被破坏了
+		- 从验证时间效率来考虑
+			- 两者的验证效率差别不大（以crc为例，都需要读取整个文件做checksum）
+		- 从版本feature考虑
+			- 因manifest清单和pg_verifybackup都是pg13的新feature，也不排除是先做了page data的manifest，而xlog依然复用了老版本的readxlogpage的代码等原因
 
-- backup/restore的安全性方面的考虑
- 	- 我的理解
-	- 后续方案
+- backup/restore的安全性
+ 	- pg_verifybackup利用了manifest中的checksum来做了备份文件的合法性校验，但这个实际上与pg系统（或backup模块）的安全性关系不是很大，这个只是文件的损坏检测，不能防篡改，不能防窃取
+	- 系统/backup模块的安全性是另一个维度，如果要实现这个特性，建议通盘考虑
+
+- 增量备份的清单文件
+	- 需要在进行增量备份时，记录xlog文件信息
 
 # 2022.03.03下午 关于backup/restore的会议讨论要点
 - 针对整个集群的restore：不需要考虑，由dba逐个node实施
