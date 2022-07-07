@@ -49,7 +49,8 @@ grammar_cjkRuby: true
 	insert into t01 values (400);
 ```  
 
-- verify backup
+- 验证backup
+
 
 - 停止其中一个节点
 ```
