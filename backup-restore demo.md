@@ -50,7 +50,9 @@ grammar_cjkRuby: true
 ```  
 
 - 验证backup
-
+```
+	./pd_verifybackup -t /tmp/bak3 -b 1657187885_base /tmp/bak2
+```
 
 - 停止其中一个节点
 ```
