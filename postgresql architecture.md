@@ -13,11 +13,11 @@ grammar_cjkRuby: true
 
 
 # Process
-![enter description here](http://www.knockatdatabase.com/wp-content/uploads/2021/04/process-architecture-1536x646.png)
+![enter description here](https://raw.githubusercontent.com/smallfat/smallfat.github.io/master/小书匠/1660661807723.png)
 
 
 # Memory
-![enter description here](http://www.knockatdatabase.com/wp-content/uploads/2021/04/memory-architecture-1536x1217.png)
+![enter description here](https://raw.githubusercontent.com/smallfat/smallfat.github.io/master/小书匠/1660661713149.png)
 
 - 数据共享缓冲区：PostgreSQL把要操作和处理的表、index，读入到内存中，放到该区域缓存。
 - 日志缓冲区：用于缓存数据库中对数据修改的日志记录，如：update table test set id=1这条SQL语句，数据库会把这个操作的信息记录在该内存区，将来写出到日志文件中，如果配置为归档模式，则最终写出到归档日志文件中去，用于恢复使用。其大小由wal_buffers参数决定。
@@ -26,9 +26,9 @@ grammar_cjkRuby: true
 
 # Storage
 ### Logical Storage
-![enter description here](http://www.knockatdatabase.com/wp-content/uploads/2021/04/cluster-database-relationship-1536x498.png)
+![enter description here](https://raw.githubusercontent.com/smallfat/smallfat.github.io/master/小书匠/1660661223795.png)
 
 ### Physical Storage
-![enter description here](http://www.knockatdatabase.com/wp-content/uploads/2021/04/cluster-physical-1536x820.png)
+![enter description here](https://raw.githubusercontent.com/smallfat/smallfat.github.io/master/小书匠/1660661265169.png)
 
 # Lock Mechanism
