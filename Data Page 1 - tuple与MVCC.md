@@ -1,5 +1,5 @@
 ---
-title: Data Page 1 - tuple内幕
+title: Postgresql Data Page - tuple内幕
 tags: 
 grammar_cjkRuby: true
 ---
@@ -61,7 +61,7 @@ grammar_cjkRuby: true
 ![enter description here](./images/1652062636448.png)
 
 
-### Tuple
+# Tuple
 - 每个tuple，可以对应table内的一行数据
 
 ### Tuple Header
@@ -72,12 +72,22 @@ grammar_cjkRuby: true
 	- tuple在内存中创建的时候，这时候还没有涉及到transaction以及visibility，因此使用t_datum : DatumTupleFields记录datum的一些属性。
 	- 在某个事务把tuple插入page buffer或者表文件的时候，这时候需要记录transaction id以及visibility，因此将t_datum替换为t_heap : HeapTupleFields
 
+### tuple的增删改
+##### 插入
+##### 删除
+##### 更新
+
+
+# 事务与tuple构成的可见性系统
 - HeapTupleFields与clog构成可见性系统
-	- t_ctid : ItemPointerData -  composed by {ip_blkid, ip_posid}, ip_blkid tells us which block, ip_posid tells us which entry in  the linp (ItemIdData) array we want. 此处,block指table中的一个page; ip_posid指的是linp数组中的索引
+	- t_ctid(ItemPointerData类型) -  composed by {ip_blkid, ip_posid}, ip_blkid tells us which block, ip_posid tells us which entry in  the linp (ItemIdData) array we want. 此处,block指table中的一个page; ip_posid指的是linp数组中的索引
 	- update 操作 - 相当于delete操作+insert操作
 	- 多版本tuple - t_ctid总是指向下一个有效的tuple物理位置，即{page index, linp index}
 	- t_xmin与t_xmax - 当前tuple中的insert操作者transaction id与delete 操作者transaction id
 	- t_cid与visibility关系不大
+
+
+
 
 - Visibility Check Rules
 ```
@@ -121,5 +131,9 @@ Rule 10: If Status(t_xmin) = COMMITTED ∧ Status(t_xmax) = COMMITTED ∧ Snapsh
 	- 同时对同一个table的同一行数据的update，怎么处理
 	- 同时对同一个table的insert，怎么处理
 	- 同时对同一个table的delete，怎么处理	
+	- mvcc对读写或写读有好处，对写写怎么样？
+	
 - 这里的并发，不仅仅包括事务级别的并发，还包括engineering thread角度的并发，因此有两个维度
 - 留待研究lock这个主题时，再来深入分析
+- lock与mvcc并发并不冲突，是互相补充的关系
+- 写case，看日志，结合原理，分析代码
