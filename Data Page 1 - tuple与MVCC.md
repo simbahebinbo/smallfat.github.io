@@ -71,12 +71,17 @@ grammar_cjkRuby: true
 	- union结构
 	- tuple在内存中创建的时候，这时候还没有涉及到transaction以及visibility，因此使用t_datum : DatumTupleFields记录datum的一些属性。
 	- 在某个事务把tuple插入page buffer或者表文件的时候，这时候需要记录transaction id以及visibility，因此将t_datum替换为t_heap : HeapTupleFields
+	
+- header字段的对齐	
+![tuple字段位置对齐](./images/1652062437391.png)
+
 
 ### tuple的增删改
 
 元组(tuple)与page的关系如下图所示(详细字段见上文所述)：
 
 ![enter description here](./images/tuple1.png)
+以下关于tuple增删改的描述，是假定最多两个事务同时并发操作一行数据(一个tuple)，但操作依然存在先后关系(这个由其他机制保证)。
 
 ##### 插入
 
@@ -115,29 +120,28 @@ Tuple_1：
 当执行第一条UPDATE命令时，Tuple_1的t_xmax被设为txid 100，在逻辑上被删除；然后Tuple_2被插入；接下来重写Tuple_1的t_ctid以指向Tuple_2。Tuple_1和Tuple_2的头部字段设置如下。
 
 Tuple_1：
-
-t_xmax被设置为100。
-t_ctid从(0,1)被改写为(0,2)。
-Tuple_2：
-
-t_xmin被设置为100。
-t_xmax被设置为0。
-t_cid被设置为0。
-t_ctid被设置为(0,2)。
-当执行第二条UPDATE命令时，和第一条UPDATE命令类似，Tuple_2被逻辑删除，Tuple_3被插入。Tuple_2和Tuple_3的首部字段设置如下。
+- t_xmax被设置为100。
+- t_ctid从(0,1)被改写为(0,2)。
 
 Tuple_2：
+ - t_xmin被设置为100。
+ - t_xmax被设置为0。
+ - t_cid被设置为0。
+ - t_ctid被设置为(0,2)。
 
-t_xmax被设置为100。
-t_ctid从(0,2)被改写为(0,3)。
+当执行第二条UPDATE命令时，和第一条UPDATE命令类似，Tuple_2被逻辑删除，Tuple_3被插入。Tuple_2和Tuple_3的首部字段设置如下:
+
+Tuple_2：
+ - t_xmax被设置为100。
+ - t_ctid从(0,2)被改写为(0,3)。
+
 Tuple_3：
+ - t_xmin被设置为100。
+ - t_xmax被设置为0。
+ - t_cid被设置为1。
+ - t_ctid被设置为(0,3)。
 
-t_xmin被设置为100。
-t_xmax被设置为0。
-t_cid被设置为1。
-t_ctid被设置为(0,3)。
 与删除操作类似，如果txid=100的事务已经提交，那么Tuple_1和Tuple_2就成为了死元组，而如果txid=100的事务中止，Tuple_2和Tuple_3就成了死元组。
-
 
 # 事务与tuple构成的可见性系统
 - HeapTupleFields与clog构成可见性系统
@@ -166,28 +170,25 @@ Rule 10: If Status(t_xmin) = COMMITTED ∧ Status(t_xmax) = COMMITTED ∧ Snapsh
 
 - Questions
 	- 上述check rules，基本以current tid与t_xmin/t_xmax的关系作为rule，没有涉及事务的isolation级别。根据isolation的理论，visibility与isolation级别应该是强相关的。？？？？？
-	
-- header字段的对齐	
-![tuple字段位置对齐](./images/1652062437391.png)
 
-### Tuple Data
-###### tuple data存储位置
+# Tuple Data
+### tuple data存储位置
 - tuple data的存储位置: t_hoff表示了data起始处相对于TupleDataHeader起始处的offset
 
-###### TupleDesc
+### TupleDesc
 - 如下图，tupledesc描述了table中每个字段的属性
 
 ![enter description here](./images/Screenshot_from_2022-05-09_17-53-46.png)
 
-###### tuple data在HeapTupleHeaderData后的组织
+### tuple data在HeapTupleHeaderData后的组织
 - 见heap_fill_tuple
 
 ### 插入tuple
-###### 基本逻辑
+##### 基本逻辑
 - heap_fill_tuple
 - 在pd_lower后添加pd_linp记录，在pd_upper前新增tuple记录
 
-###### 并发处理
+##### 并发处理
 - 几个问题
 	- 同时对同一个table的同一行数据的update，怎么处理
 	- 同时对同一个table的insert，怎么处理
