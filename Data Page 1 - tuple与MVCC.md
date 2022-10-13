@@ -73,9 +73,70 @@ grammar_cjkRuby: true
 	- 在某个事务把tuple插入page buffer或者表文件的时候，这时候需要记录transaction id以及visibility，因此将t_datum替换为t_heap : HeapTupleFields
 
 ### tuple的增删改
+
+元组(tuple)与page的关系如下图所示(详细字段见上文所述)：
+
+![enter description here](./images/tuple1.png)
+
 ##### 插入
+
+在插入操作中，新元组将直接插入到目标表的页面中，如下图所示：
+
+![enter description here](./images/tuple2.png)
+
+假设元组是由txid=99的事务插入页面中的，在这种情况下，被插入元组的首部字段会依以下步骤设置。
+Tuple_1：
+ - t_xmin设置为99，因为此元组由txid=99的事务所插入。
+ - t_xmax设置为0，因为此元组尚未被删除或更新。
+ - t_cid设置为0，因为此元组是由txid=99的事务所执行的第一条命令所插入的。
+ - t_ctid设置为(0,1)，指向自身，因为这是该元组的最新版本。
+
 ##### 删除
+
+在删除操作中，目标元组只是在逻辑上被标记为删除。目标元组的t_xmax字段将被设置为执行DELETE命令事务的txid。如下图所示：
+
+![enter description here](./images/tuple3.png)
+在这种情况下，Tuple_1的首部字段会依以下步骤设置。
+
+Tuple_1：
+- t_xmax被设为111。
+
+如果txid=111的事务已经提交，那么Tuple_1就不是必需的了。通常不需要的元组在PostgreSQL中被称为死元组（dead tuple）。
+
+死元组最终将从页面中被移除。清除死元组的过程被称为清理（VACUUM）过程
+
 ##### 更新
+
+在更新操作中，PostgreSQL在逻辑上实际执行的是删除最新的元组，并插入一条新的元组
+
+![enter description here](./images/tuple4.png)
+假设由txid=99的事务插入的行，被txid=100的事务更新两次。
+
+当执行第一条UPDATE命令时，Tuple_1的t_xmax被设为txid 100，在逻辑上被删除；然后Tuple_2被插入；接下来重写Tuple_1的t_ctid以指向Tuple_2。Tuple_1和Tuple_2的头部字段设置如下。
+
+Tuple_1：
+
+t_xmax被设置为100。
+t_ctid从(0,1)被改写为(0,2)。
+Tuple_2：
+
+t_xmin被设置为100。
+t_xmax被设置为0。
+t_cid被设置为0。
+t_ctid被设置为(0,2)。
+当执行第二条UPDATE命令时，和第一条UPDATE命令类似，Tuple_2被逻辑删除，Tuple_3被插入。Tuple_2和Tuple_3的首部字段设置如下。
+
+Tuple_2：
+
+t_xmax被设置为100。
+t_ctid从(0,2)被改写为(0,3)。
+Tuple_3：
+
+t_xmin被设置为100。
+t_xmax被设置为0。
+t_cid被设置为1。
+t_ctid被设置为(0,3)。
+与删除操作类似，如果txid=100的事务已经提交，那么Tuple_1和Tuple_2就成为了死元组，而如果txid=100的事务中止，Tuple_2和Tuple_3就成了死元组。
 
 
 # 事务与tuple构成的可见性系统
