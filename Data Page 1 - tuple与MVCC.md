@@ -152,8 +152,6 @@ Tuple_3：
 	- t_cid与visibility关系不大
 
 
-
-
 - Visibility Check Rules
 ```
 Rule 1: If Status(t_xmin) = ABORTED ⇒ Invisible
@@ -198,4 +196,7 @@ Rule 10: If Status(t_xmin) = COMMITTED ∧ Status(t_xmax) = COMMITTED ∧ Snapsh
 - 这里的并发，不仅仅包括事务级别的并发，还包括engineering thread角度的并发，因此有两个维度
 - 留待研究lock这个主题时，再来深入分析
 - lock与mvcc并发并不冲突，是互相补充的关系
+
+
+# 学习“并发控制”的方法
 - 写case，看日志，结合原理，分析代码
