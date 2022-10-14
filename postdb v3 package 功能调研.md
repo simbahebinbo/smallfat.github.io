@@ -71,3 +71,35 @@ $$
 $$
  LANGUAGE plpgsql;
 ```
+
+
+# IvorySQL
+
+Packages in IvorySQL database. This support includes the following:
+
+- Support of Oracle compatible syntax for function and procedure creations.
+- Support of Package creation and persistence using the oracle syntax,
+  (including package specification, package body and constructor/initializer)
+- Support of PL/iSQL language. This language is added to implement the PL/SQL
+  statements in PostgreSQL. Most of the common statements have been added.
+- Support of DROP PACKAGE statement.
+- Support of GRANT and REVOKE of privileges on Packages.
+- Support of Packages syntax in PSQL client. So that oracle style packages
+  can be created from PSQL.
+- Support of complete Package compilation.
+- Support of keeping a Package compilation state in-memory to avoid
+  further repeated compilations and also access information from this
+  in-memory state.
+- Support of Package constructors/initializer compilation and execution.
+- Support of Cursors declaration and creation at package level.
+- Support of Package level variables (This includes the package level
+  variables to be accessed from any pl-block of plisql language).
+- Support for package record types.
+- Support of package ref cursors.
+- Support of Definer/Invoker rights for packages
+- Support of pg_dump and pg_restore
+- Support of ALTER PACKAGE OWNER statement.
+- Test coverage
+
+问题：
+目前看还有报bug，不清楚稳定程度如何。
