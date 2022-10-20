@@ -103,3 +103,54 @@ Packages in IvorySQL database. This support includes the following:
 
 问题：
 目前看还有报bug，不清楚稳定程度如何。
+
+
+# IvorySQL Package功能
+## pg14 commit: sql standard function
+
+```
+SQL-standard function body
+
+This adds support for writing CREATE FUNCTION and CREATE PROCEDURE
+statements for language SQL with a function body that conforms to the
+SQL standard and is portable to other implementations.
+
+Instead of the PostgreSQL-specific AS $$ string literal $$ syntax,
+this allows writing out the SQL statements making up the body
+unquoted, either as a single statement:
+
+    CREATE FUNCTION add(a integer, b integer) RETURNS integer
+        LANGUAGE SQL
+        RETURN a + b;
+
+or as a block
+
+    CREATE PROCEDURE insert_data(a integer, b integer)
+    LANGUAGE SQL
+    BEGIN ATOMIC
+      INSERT INTO tbl VALUES (a);
+      INSERT INTO tbl VALUES (b);
+    END;
+
+The function body is parsed at function definition time and stored as
+expression nodes in a new pg_proc column prosqlbody.  So at run time,
+no further parsing is required.
+
+However, this form does not support polymorphic arguments, because
+there is no more parse analysis done at call time.
+
+Dependencies between the function and the objects it uses are fully
+tracked.
+
+A new RETURN statement is introduced.  This can only be used inside
+function bodies.  Internally, it is treated much like a SELECT
+statement.
+
+psql needs some new intelligence to keep track of function body
+boundaries so that it doesn't send off statements when it sees
+semicolons that are inside a function body.
+
+Tested-by: Jaime Casanova <jcasanov@systemguards.com.ec>
+Reviewed-by: Julien Rouhaud <rjuju123@gmail.com>
+Discussion: https://www.postgresql.org/message-id/flat/1c11f1eb-f00c-43b7-799d-2d44132c02d7@2ndquadrant.com
+```
