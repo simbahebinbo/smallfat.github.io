@@ -24,7 +24,19 @@ The service receives WAL from the compute node and ensures that it is stored dur
 
 # 模块
 
-## Page Service
+## Page Server
+
+The Page Server has a few different duties:
+
+ - Respond to GetPage@LSN requests from the Compute Nodes
+ - Receive WAL from WAL safekeeper, and store it
+ - Upload data to S3 to make it durable, download files from S3 as needed
+
+### Services
+
+![enter description here](./images/Screenshot_from_2022-11-04_13-12-27.png)
+
+S3 is the main fault-tolerant storage of all data, as there are no Page Server replicas. We use a separate fault-tolerant WAL service to reduce latency. It keeps track of WAL records which are not synced to S3 yet.
 
 The Page Service listens for GetPage@LSN requests from the Compute Nodes, and responds with pages from the repository. On each GetPage@LSN request, it calls into the Repository function
 
