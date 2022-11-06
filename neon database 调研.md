@@ -32,15 +32,39 @@ The Page Server has a few different duties:
  - Receive WAL from WAL safekeeper, and store it
  - Upload data to S3 to make it durable, download files from S3 as needed
 
+S3 is the main fault-tolerant storage of all data, as there are no Page Server replicas. We use a separate fault-tolerant WAL service to reduce latency. It keeps track of WAL records which are not synced to S3 yet.
+
+
 ### Services
 
-![enter description here](./images/Screenshot_from_2022-11-04_13-12-27.png)
+The Page Server consists of multiple threads that operate on a shared repository of page versions:
 
-S3 is the main fault-tolerant storage of all data, as there are no Page Server replicas. We use a separate fault-tolerant WAL service to reduce latency. It keeps track of WAL records which are not synced to S3 yet.
+![enter description here](./images/Screenshot_from_2022-11-04_13-12-27.png)
+#### Page Service
 
 The Page Service listens for GetPage@LSN requests from the Compute Nodes, and responds with pages from the repository. On each GetPage@LSN request, it calls into the Repository function
 
 A separate thread is spawned for each incoming connection to the page service. The page service uses the libpq protocol to communicate with the client. The client is a Compute Postgres instance
+
+#### WAL Receiver
+
+The WAL receiver connects to the external WAL safekeeping service using PostgreSQL physical streaming replication, and continuously receives WAL. It decodes the WAL records, and stores them to the repository.
+
+#### Backup service
+
+The backup service, responsible for storing pageserver recovery data externally.
+
+Currently, pageserver stores its files in a filesystem directory it's pointed to. That working directory could be rather ephemeral for such cases as "a pageserver pod running in k8s with no persistent volumes attached". Therefore, the server interacts with external, more reliable storage to back up and restore its state.
+
+The code for storage support is extensible and can support arbitrary ones as long as they implement a certain Rust trait. There are the following implementations present:
+
+local filesystem — to use in tests mainly
+AWS S3 - to use in production
+The backup service is disabled by default and can be enabled to interact with a single remote storage.
+
+#### Repository background tasks
+
+
 
 # WAL service
 
