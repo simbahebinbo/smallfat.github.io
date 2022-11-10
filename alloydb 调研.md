@@ -37,4 +37,50 @@ grammar_cjkRuby: true
  - Storage-layer backups: Backup operations are completely handled by the storage service, and do not impact the performance and resources of the database layer.
  
  # Life of a write operation
+ ![enter description here](./images/3_Processing_of_a_write_operation_in_AlloyDB.jpg)
  
+ ## procedure
+ 
+ - The primary instance processes the statement (updating its data and index structures in-memory) and prepares a WAL log record that captures the semantics of the update operation. 
+ - Upon transaction commit, this log record is first synchronously saved to the low-latency regional log storage, 
+ - asynchronously picked up by the log processing service in the next step.
+ 
+ ## key points
+ - storage layer is intentionally decomposed into separate components  — log storage, log processing, and block storage
+ - WAL log writing is an append-only operation, AlloyDB specifically optimizes for this use case with a high-performance, low-latency storage solution
+ - WAL log records need to be processed by applying them to the previous version of the block they refer to. 
+ 
+  To do this, the storage layer’s LPS subsystem performs random block lookups and applies PostgreSQL’s redo-processing logic ***in a high performance and scalable way.***(how scalable?)
+- multiple instances of the log processing service (LPS) run in each of the zones of the region
+	
+## questions	
+- how to replay wal log in scalable way?
+	
+# life of a read operation	
+
+![enter description here](./images/4_Processing_of_a_read_operation_in_AlloyD.jpg)
+
+## procedure
+- first, access buffer cache and ultra-fast cache
+- if both of caches are miss, a corresponding block fetch request is sent to the storage layer.
+	- Apart from the block number to retrieve, this request specifies a log-sequence number (LSN) at which to read the data
+	- The use of a specific LSN here ensures that the database server always sees a consistent state during query processing. 
+	- ***This is particularly important when evicting blocks from the PostgreSQL buffer cache and subsequently reloading them***, or when traversing complex, multi-block index structures like B-trees that might be (structurally) modified concurrently.
+- the log processing service is also responsible for serving the block fetch requests
+	- Every LPS has its own instance of the PostgreSQL buffer cache 
+	- If the requested block is not present in the cache, the LPS retrieves the block from the sharded, regional storage and sends it back to the database layer.
+	- The log processing service must also do some bookkeeping to track which blocks have log records that have not been processed.
+
+
+## questions
+
+
+# Storage layer elasticity
+
+![enter description here](./images/5_Dynamic_mapping_of_shards_to_LPS_instances.jpg)
+## explains
+- database persistence is horizontally partitioned into groups of blocks called shards. 
+- Both shards and LPS resources scale horizontally and independently.
+
+## questions
+
