@@ -78,9 +78,11 @@ grammar_cjkRuby: true
 # Storage layer elasticity
 
 ![enter description here](./images/5_Dynamic_mapping_of_shards_to_LPS_instances.jpg)
-## explains
+## solution
 - database persistence is horizontally partitioned into groups of blocks called shards. 
 - Both shards and LPS resources scale horizontally and independently.
+- the relationship between LPS and Shards is a 1 - N Mapping
 
 ## questions
-
+- many LPSs in a zone : WAL log records need to be replayed serially， how to solve this problem?
+- Is shards distributed? The data consistency problem is here.
