@@ -7,6 +7,10 @@ grammar_cjkRuby: true
 - source code: https://github.com/neondatabase/neon
 
 # 架构
+
+![enter description here](./images/Screenshot_from_2022-11-04_13-09-03.png)
+
+
 ## major components:
 #### Pageserver
 
@@ -42,9 +46,10 @@ The Page Server consists of multiple threads that operate on a shared repository
 ![enter description here](./images/Screenshot_from_2022-11-04_13-12-27.png)
 #### Page Service
 
-The Page Service listens for GetPage@LSN requests from the Compute Nodes, and responds with pages from the repository. On each GetPage@LSN request, it calls into the Repository function
+ 1. listens for GetPage@LSN requests from the Compute Nodes
+ 2. responds with pages from the repository
+ 3. On each GetPage@LSN request, it calls into the Repository function
 
-A separate thread is spawned for each incoming connection to the page service. The page service uses the libpq protocol to communicate with the client. The client is a Compute Postgres instance
 
 #### WAL Receiver
 
@@ -64,9 +69,7 @@ The backup service is disabled by default and can be enabled to interact with a 
 
 #### Repository background tasks
 
-
-
-# WAL service
-
-![enter description here](./images/Screenshot_from_2022-11-04_13-09-03.png)
-
+#### storage
+- The page server slices the incoming WAL per relation and page
+- packages the sliced WAL into suitably-sized "layer files"
+ 
