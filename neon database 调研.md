@@ -53,7 +53,9 @@ The Page Server consists of multiple threads that operate on a shared repository
 
 #### WAL Receiver
 
-The WAL receiver connects to the external WAL safekeeping service using PostgreSQL physical streaming replication, and continuously receives WAL. It decodes the WAL records, and stores them to the repository.
+ 1. connects to the external WAL safekeeping service
+ 2. continuously receives WAL
+ 3. decodes the WAL records, and stores them to the repository.
 
 #### Backup service
 
