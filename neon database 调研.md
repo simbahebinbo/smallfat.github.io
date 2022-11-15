@@ -73,6 +73,7 @@ nothing to record due to it's crucial part
 
  
 #### checkpointing
-1. flush wals from memory to disk in (page-server/safe-keeper)?
-2. recycle wals above
-3. 
+1. flush WALs from memory to disk in (page-server/safe-keeper)?
+2. recycle WAL files in safe-keepers above
+3. free up memory that occupied by WALs above
+
