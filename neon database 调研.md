@@ -58,7 +58,7 @@ The Page Server consists of multiple threads that operate on a shared repository
  3. decodes the WAL records, and stores them to the repository. ***(but it's "WAL REDO''s duty?)***
 
 #### Backup Service
-
+nothing to record due to it's crucial part
 
 #### Repository
 1. The repository stores all the page versions, or WAL records needed to reconstruct them
@@ -66,7 +66,13 @@ The Page Server consists of multiple threads that operate on a shared repository
 	- Each repository consists of multiple Timelines
 	- Timeline is a workhorse that accepts page changes from the WAL
 	- serves get_page_at_lsn() and get_rel_size() requests
-    base on above, timelines seems to be workers that record page changes from "WAL redo" process?
-3. slices the incoming WAL per relation and page
-4. packages the sliced WAL into suitably-sized "layer files"
+    ***based on above, timeline seems to be workers that record page changes from "WAL redo" process?***
+3.  has a WAL redo manager associated with it
+	- used to replay PostgreSQL WAL records, whenever we need to reconstruct a page version from WAL to satisfy a GetPage@LSN request, or to avoid accumulating too much WAL for a page
+	- it's not related to the WAL redo unit in "WAL Receiver" module
+
  
+#### checkpointing
+1. flush wals from memory to disk in (page-server/safe-keeper)?
+2. recycle wals above
+3. 
