@@ -55,23 +55,18 @@ The Page Server consists of multiple threads that operate on a shared repository
 
  1. connects to the external WAL safekeeping service
  2. continuously receives WAL
- 3. decodes the WAL records, and stores them to the repository.
+ 3. decodes the WAL records, and stores them to the repository. ***(but it's "WAL REDO''s duty?)***
 
-#### Backup service
+#### Backup Service
 
-The backup service, responsible for storing pageserver recovery data externally.
 
-Currently, pageserver stores its files in a filesystem directory it's pointed to. That working directory could be rather ephemeral for such cases as "a pageserver pod running in k8s with no persistent volumes attached". Therefore, the server interacts with external, more reliable storage to back up and restore its state.
-
-The code for storage support is extensible and can support arbitrary ones as long as they implement a certain Rust trait. There are the following implementations present:
-
-local filesystem — to use in tests mainly
-AWS S3 - to use in production
-The backup service is disabled by default and can be enabled to interact with a single remote storage.
-
-#### Repository background tasks
-
-#### storage
-- The page server slices the incoming WAL per relation and page
-- packages the sliced WAL into suitably-sized "layer files"
+#### Repository
+1. The repository stores all the page versions, or WAL records needed to reconstruct them
+2. timeline
+	- Each repository consists of multiple Timelines
+	- Timeline is a workhorse that accepts page changes from the WAL
+	- serves get_page_at_lsn() and get_rel_size() requests
+    base on above, timelines seems to be workers that record page changes from "WAL redo" process?
+3. slices the incoming WAL per relation and page
+4. packages the sliced WAL into suitably-sized "layer files"
  
