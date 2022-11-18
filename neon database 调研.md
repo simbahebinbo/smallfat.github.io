@@ -166,16 +166,21 @@ Cloud Storage                   Page Server                           Safekeeper
 	- 优缺点
 		- safekeeper向pageserver写WAL时，wal record放进memory层后，该写操作就可以认为完成了，提高了写效率
 		- L0层的持久化是对数据块的append，写效率高
-		- 从存储读数据
-		
+		- 从存储读数据，要找到对应区间的image file和delta file
+	
 
 3. image file和delta file怎么做到快速取得指定lsn处的数据?
+	- 基于image file，回放delta file至指定lsn
 
-4. branch的存在，有什么益处呢？
+4. branch的设计，有什么益处呢？
+	- 对这种类型的数据：数据从某个lsn开始不同，可以新开一个timeline，即branch，大大提高了写效率，节约了磁盘空间
 
-5. 在存储部分实现shard存储，有什么益处和缺点？
+5. pageserver在能否实现并行回放wal以提高回放效率？
+	- 数据库多个不同的表，或者同一个表下多个不同的page同时进行写操作，可以并行回放，提高效率
 
-6. 如何在存储部分实现shard存储？
+6. 在存储部分实现shard存储，有什么益处和缺点？
 
-7. 能否实现并行回放wal以提高回放效率？
+7. 如何在存储部分实现shard存储？
+
+
 
