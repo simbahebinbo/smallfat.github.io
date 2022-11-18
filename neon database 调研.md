@@ -178,7 +178,11 @@ Cloud Storage                   Page Server                           Safekeeper
 5. pageserver在能否实现并行回放wal以提高回放效率？
 	- 数据库多个不同的表，或者同一个表下多个不同的page同时进行写操作，可以并行回放，提高效率
 
+6. 在存储部分实现shard存储，有什么益处和缺点？
 
+7. 如何在存储部分实现shard存储？
+
+8. L1文件的lsn range和key range是什么关系？
 
 
 
