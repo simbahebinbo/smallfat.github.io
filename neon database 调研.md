@@ -152,8 +152,30 @@ Cloud Storage                   Page Server                           Safekeeper
 2. recycle WAL files in safe-keepers above
 3. free up memory that occupied by WALs above
 
-# Questions
+# Q & A
+
 1. For the database system, when is the write operation done?
-	- WAL写入safekeeper成功，并达到多数？
-	- pageserver 回放WAL成功
-	- 
+	- a. WAL写入safekeeper成功，并达到多数？ b. pageserver 回放了WAL，且持久化成功?
+	- 采用方案a，应该能更快提高写的效率。读数据的时候，若相应wal还没有回放，则读请求等待。safekeeper与计算端之间有协议
+	
+2. pageserver: memory - L0 - L1多级存储结构，设计意图是什么？
+	- 类似于LSM-Tree思想
+		- 在memory层存储已经排序(按relation/page)的wal record
+		- memory层积累到一定程度，持久化到disk，形成L0文件
+		- L0层慢慢的有了多个L0文件，积累到一定程度，合并成L1文件，并持久化到L1层
+	- 优缺点
+		- safekeeper向pageserver写WAL时，wal record放进memory层后，该写操作就可以认为完成了，提高了写效率
+		- L0层的持久化是对数据块的append，写效率高
+		- 从存储读数据
+		
+
+3. image file和delta file怎么做到快速取得指定lsn处的数据?
+
+4. branch的存在，有什么益处呢？
+
+5. 在存储部分实现shard存储，有什么益处和缺点？
+
+6. 如何在存储部分实现shard存储？
+
+7. 能否实现并行回放wal以提高回放效率？
+
