@@ -142,16 +142,138 @@ if num < 0 {
 ```
 
 ## 循环
+### loop
+```
+fn main() {
+    ***loop*** {
+        println!("again!");
+    }
+	
+	
+	let mut counter = 0;
+
+    let result = ***loop*** {
+        counter += 1;
+
+        if counter == 10 {
+            break counter * 2;
+        }
+    };
+
+    println!("The result is {result}");
+}
 
 
-# 函数/变量
-## 数组的定义、声明、赋值
-## 矢量的定义、声明、赋值
-## 函数的定义、声明、赋值
-## 其他类型的定义、声明、赋值
+fn main() {
+    let mut count = 0;
+    'counting_up: ***loop*** {
+        println!("count = {count}");
+        let mut remaining = 10;
 
-# 闭包
+        ***loop*** {
+            println!("remaining = {remaining}");
+            if remaining == 9 {
+                break;
+            }
+            if count == 2 {
+                break 'counting_up;
+            }
+            remaining -= 1;
+        }
+
+        count += 1;
+    }
+    println!("End count = {count}");
+}
+
+```
+
+
+### while
+
+```
+fn main() {
+    let mut number = 3;
+
+    while number != 0 {
+        println!("{number}!");
+
+        number -= 1;
+    }
+
+    println!("LIFTOFF!!!");
+}
+```
+
+
+### for .. in
+
+```
+fn main() {
+    let a = [10, 20, 30, 40, 50];
+
+    for element in a {
+        println!("the value is: {element}");
+    }
+}
+
+fn main() {
+    for number in (1..4).rev() {
+        println!("{number}!");
+    }
+    println!("LIFTOFF!!!");
+}
+```
+
+
+# 变量
+- variables are immutable by default 
+- constants
+	- constants values that are bound to a name 
+	- are not allowed to change
+- differences between constants and variables
+	- not allowed to use mut with constants, as constants is always immutable
+	- declare constants using the const keyword instead of the let keyword
+- shadowing
+	- concept: declare a new variable with the same name as a previous variable - the first variable is shadowed by the second
+	- meaning: the second variable is what the compiler will see when you use the name of the variable
+	- the second variable overshadows the first, taking any uses of the variable name to itself until either it itself is shadowed or the scope ends
+	- what is this feature for?
+
+```
+// mutable variable
+fn main() {
+    let mut x = 5;
+    println!("The value of x is: {x}");
+    x = 6;
+    println!("The value of x is: {x}");
+	
+	
+	const THREE_HOURS_IN_SECONDS: u32 = 60 * 60 * 3;
+}
+
+// shadowing
+fn main() {
+    let x = 5;
+
+    let x = x + 1;
+
+    {
+        let x = x * 2;
+        println!("The value of x in the inner scope is: {x}");
+    }
+
+    println!("The value of x is: {x}");
+}
+
+
+```
+
+# 函数
+## 闭包
 
 # 内存管理
 
 # 错误处理
+
+# 模块/包/箱
