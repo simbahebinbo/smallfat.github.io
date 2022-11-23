@@ -4,18 +4,142 @@ tags:
 grammar_cjkRuby: true
 ---
 # 数据类型
-## 数组
+## 布尔
+- two possible values: true and false
+- one byte in size
+- specified using "bool" keyword
+
+```
+fn main() {
+    let t = true;
+
+    let f: bool = false; // with explicit type annotation
+}
+```
+
+## 字符/字符串
+
+## 数值
+### 浮点 (float)
+- floating-point types are f32 and f64, which are 32 bits and 64 bits in size, respectively
+- The default type is f64 because on modern CPUs 
+- f64 is the same speed as f32
+- f64 is capable of more precision than f32
+- All floating-point types are signed.
+
+```
+fn main() {
+    let x = 2.0; // f64
+
+    let y: f32 = 3.0; // f32
+}
+```
+
+
+### 整数 (decimal)
+
+![types](./images/Screenshot_from_2022-11-23_11-13-29.png)
+
+
+![literal](./images/Screenshot_from_2022-11-23_11-14-48.png)
+## 枚举 (enum)
+## 哈希 (hash)
+## 结构 (struct)
+## 元组 (tuple)
+-  group together a number of values with a variety of types into one ***compound type***
+-  fixed length: once declared, they cannot grow or shrink in size
+
+```
+fn main() {
+    let tup = (500, 6.4, 1);
+
+    let (x, y, z) = tup;
+
+    println!("The value of y is: {y}");
+}
+```
+
+## 数组 (array)
 - 按顺序存储在内存中的相同类型对象的集合
 - 数组的长度或大小等于数组中的元素数
-- 数组大小可在代码中指定
+- 数组大小可在代码中指定，或者由编译器决定
 
-## 矢量
+```
+fn main() {
+let months = ["January", "February", "March", "April", "May", "June", "July",
+              "August", "September", "October", "November", "December"];
+			  
+let a: [i32; 5] = [1, 2, 3, 4, 5];
+
+let a = [1, 2, 3, 4, 5];
+}
+
+
+```
+
+## 矢量 (vector)
 - 存储相同类型的多个变量
 - 大小可随时增加或者缩小(在编译时，大小随时间更改的功能是隐式的) (与map类似？)
 
-# 流程控制
+```
+let v: Vec<i32> = Vec::new();
 
-# 函数/变量定义与声明
+let v = vec![1, 2, 3];
+
+    v.push(5);
+    v.push(6);
+    v.push(7);
+    v.push(8);
+
+```
+
+# 流程控制
+## 分支 - if/else
+- if 和 else 关键字与表达式一起用于测试值并根据测试结果执行操作
+
+```
+if 1 == 2 {
+    println!("True, the numbers are equal."); // 
+} else {
+    println!("False, the numbers are not equal.");
+}
+```
+-  if 块也可充当表达式
+
+```
+let formal = true;
+let greeting = ***if formal*** { // if used here as an expression
+    "Good day to you."     // return a String
+} else {
+    "Hey!"                 // return a String
+};
+println!("{}", greeting)   // prints "Good day to you."
+```
+
+- 合并多个测试条件
+
+```
+let num = 500 // num variable can be set at some point in the program
+let out_of_range: bool;
+if num < 0 {
+    out_of_range = true;
+} else if num == 0 {
+    out_of_range = true;
+} else if num > 512 {
+    out_of_range = true;
+} else {
+    out_of_range = false;
+}
+```
+
+## 循环
+
+
+# 函数/变量
+## 数组的定义、声明、赋值
+## 矢量的定义、声明、赋值
+## 函数的定义、声明、赋值
+## 其他类型的定义、声明、赋值
 
 # 闭包
 
