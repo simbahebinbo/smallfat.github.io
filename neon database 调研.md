@@ -101,7 +101,7 @@ Cloud Storage                   Page Server                           Safekeeper
 
 2. L0 phase
 	- enough WAL has been accumulated, it is flushed to disk into a new L0 layer file
-	-  covers the whole key range is called a L0 file 
+	- covers the whole key range is called a L0 file 
 ```
     000000067F000032BE0000400000000020B6-000000067F000032BE0000400000000030B6__000000578C6B29-0000000057A50051
               start key                          end key                          start LSN     end LSN
