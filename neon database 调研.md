@@ -130,8 +130,12 @@ Cloud Storage                   Page Server                           Safekeeper
 - image file 
     contains a ***snapshot*** of all keys at a particular LSN
 	
-	1. wal record or page data？
+	1. page data？
+	page data
+	
 	2. how to generate?
+		
+	
 	3. file name format: 
 ```
     000000067F000032BE0000400000000070B6-000000067F000032BE0000400000000080B6__00000000346BC568
