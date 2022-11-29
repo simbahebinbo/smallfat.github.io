@@ -19,10 +19,18 @@ grammar_cjkRuby: true
 
 ## 读流程
 
+## 增加/减少node
+
+## pcs的功能
+- 进行shard leader election，确定shard的leader
+
 ## question
+0. shard什么被创建？ - 在wal被创建之后？
 1. sharding的key：wal lsn？
+2. sharding的key-range生成的时间？
+3. sharding的key-range是动态变化的？
 2. 响应node变化(增加/减少)
-	- 引起sharding key range的变化，要及时推送到存储层，重构存储
+	- 引起sharding key range的变化 - 要及时推送到存储层，重构存储
 	
 3. sharding元信息保存在pcs内存，并持久化到disk
 
