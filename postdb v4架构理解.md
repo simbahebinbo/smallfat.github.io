@@ -21,6 +21,8 @@ grammar_cjkRuby: true
 
 ## question
 1. sharding的key：wal lsn？
-2. node变化(增加/减少)引起sharding key range的变化，要及时推送到存储层，重构存储
+2. 响应node变化(增加/减少)
+	- 引起sharding key range的变化，要及时推送到存储层，重构存储
+	
 3. sharding元信息保存在pcs内存，并持久化到disk
 
