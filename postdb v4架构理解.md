@@ -20,8 +20,8 @@ grammar_cjkRuby: true
 
 ### 写流程（没考虑DDL）
 - driver将client write request转发到对应shard primary node。
-- 若转发过来的request没有对应的shard，pcs创建一个新的shard，并选举某个node作为新shard的leader，合并入合适的shard group。最后，pcs将shard信息写入相应的meta data。
 - primary node上，computer layer解析并执行plan，数据写进page buffer，且生成了WAL。
+- 若转发过来的request没有对应的shard，pcs创建一个新的shard，并选举某个node作为新shard的leader，合并入合适的shard group。pcs将shard信息写入相应的meta data。
 - WAL日志将被复制到该shard的所有副本node，使用quorom协议决定wal是否复制成功。
 - primary node及相应的副本上，WAL被持久化到storage layer；同时page data也被持久化(如何持久化存储需另外考虑)。
 
@@ -36,30 +36,41 @@ grammar_cjkRuby: true
 
 
 ## pcs的功能
-- 进行pcs leader election，确定pcs leader(primary node)。
-- 进行shard leader election，确定shard的leader
-- 在shard和shard group被创建完成后，记录相关信息到meta data中，并作持久化
+- 进行pcs leader election，确定pcs primary node。
+- 创建shard和shard group，记录相关信息到meta data中，并作持久化
+- 进行shard leader election，确定shard的leader。
 - 扩容/缩容
-	- 扩容新增node时，pcs根据负载均衡原则调整shard分布，从负载重的node reload一些shard-group到新的node，并更新meta data
-	- 缩容减少node时，从meta data中取得该node的shard/shard group/wal信息，pcs根据负载均衡原则调整shard分布，并在目标node中replay相关wal
+	- 扩容新增node时，pcs primary node根据负载均衡原则调整shard分布，从负载重的node reload一些shard-group到新的node，并更新meta data
+	- 缩容减少node时，从meta data中取得该node的shard/shard group/wal信息，pcs primary node根据负载均衡原则调整shard分布，并在目标node中replay相关wal
 - 提供查询接口，查询shard信息：shard_key_range/primary_node/replications 信息
-- 全局配置： 
+- 全局配置/统一监控/日志/Tracing
+	- 提供API接口
+	- 各节点有agent，pcs primary 向各节点agent发出命令，获取或设置各节点数据
 
-
-## question
-0. 每个node上wal与shard的对应关系?
-0. shard什么被创建？ - 在wal被创建之后？
-1. shard的key：wal lsn？
-3. shard key-range生成策略
+## conjecture
+1. 每个node上wal与shard的对应关系?
+	- 在compute layer，wal将被按照relation/page分解为一段段的wal，shard可以对应wal lsn为key。这样，wal与shard是一一对应的关系。
+2. shard什么被创建？ 
+	- 在wal被compute layer创建之后
+3. shard的key
+	- 同第一点分析
+4. shard key-range生成策略
 	- 范围
 		- 因lsn的最新值是不断增长的，怎么处理？
+			- 使用shard group容纳新的shard
 		- 要考虑负载均衡问题
-		- 要考虑范围大小，这关系到
-	- 时机 - shard创建之时
-2. 响应node变化(增加/减少)
-	- 引起sharding key range的变化 - 要及时推送到存储层，重构存储
-	
-3. sharding元信息保存在pcs内存，并持久化到disk
-4. 全局配置信息存在哪里？
-5. DDL: 为什么要存在meta data内？
-6. meta-data在各node间，需要保证一致性吗
+		- 要考虑范围大小
+	- 时机 
+		- shard创建之时
+5. shard元信息保存在pcs内存，并持久化到disk
+6. 全局配置信息存在哪里？
+	- 保存在每个node的存储层，作为元信息的一部分
+7. meta-data具体包含几种类型
+	- shard信息 ： key range/primary node/replication nodes
+	- 配置信息
+	- table 元数据
+
+## question
+1. 写DDL时，表的结构会发生变化，其元数据为什么要存在meta data内？
+2. meta-data在各node间，需要保证一致性吗?
+
