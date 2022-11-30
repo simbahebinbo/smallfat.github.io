@@ -30,8 +30,9 @@ grammar_cjkRuby: true
 - node 解析该request
 - 依据request中不同shard的数据，分别到shard所在的primary node上读取数据。shard对应的primary node号，从pcs查询可知。
 
-
 ## 扩容/缩容
+- 新增node时，pcs根据负载均衡原则调整shard分布，从负载重的node reload一些shard-group到新的node，并更新meta data
+- 减少node时，从meta data中取得该node的shard/shard group/wal信息，pcs根据负载均衡原则调整shard分布，并在目标node中replay相关wal
 
 
 ## pcs的功能
