@@ -19,14 +19,20 @@ grammar_cjkRuby: true
 - pcs模块启动，从存储层载入meta-data，给存储层下发全局配置
 
 ### 写流程（没考虑DDL）
-- driver将client write request转发到对应shard primary node
-- 若转发过来的request没有对应的shard，pcs创建一个新的shard，合并入合适的shard group。最后，pcs将shard信息写入相应的meta data。
+- driver将client write request转发到对应shard primary node。
+- 若转发过来的request没有对应的shard，pcs创建一个新的shard，并选举某个node作为新shard的leader，合并入合适的shard group。最后，pcs将shard信息写入相应的meta data。
 - primary node上，computer layer解析并执行plan，数据写进page buffer，且生成了WAL。
-- WAL日志将被复制到该shard的所有副本node，使用quorom协议决定wal是否复制成功
+- WAL日志将被复制到该shard的所有副本node，使用quorom协议决定wal是否复制成功。
+- primary node及相应的副本上，WAL被持久化到storage layer；同时page data也被持久化(如何持久化存储需另外考虑)。
 
 ### 读流程
+- driver将client read request转发到某个node。
+- node 解析该request
+- 依据request中不同shard的数据，分别到shard所在的primary node上读取数据。shard对应的primary node号，从pcs查询可知。
+
 
 ## 扩容/缩容
+
 
 ## pcs的功能
 - 进行shard leader election，确定shard的leader
@@ -50,3 +56,5 @@ grammar_cjkRuby: true
 	
 3. sharding元信息保存在pcs内存，并持久化到disk
 4. 全局配置信息存在哪里？
+5. DDL: 为什么要存在meta data内？
+
