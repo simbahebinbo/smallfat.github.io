@@ -36,11 +36,12 @@ grammar_cjkRuby: true
 
 
 ## pcs的功能
+- 进行pcs leader election，确定pcs leader(primary node)。
 - 进行shard leader election，确定shard的leader
 - 在shard和shard group被创建完成后，记录相关信息到meta data中，并作持久化
-- 响应node状态变化(新增/减少/扩容/缩容)
-	- 新增node时，pcs根据负载均衡原则调整shard分布，从负载重的node reload一些shard-group到新的node，并更新meta data
-	- node减少时，从meta data中取得该node的shard/shard group/wal信息，pcs根据负载均衡原则调整shard分布，并在目标node中replay相关wal
+- 扩容/缩容
+	- 扩容新增node时，pcs根据负载均衡原则调整shard分布，从负载重的node reload一些shard-group到新的node，并更新meta data
+	- 缩容减少node时，从meta data中取得该node的shard/shard group/wal信息，pcs根据负载均衡原则调整shard分布，并在目标node中replay相关wal
 - 提供查询接口，查询shard信息：shard_key_range/primary_node/replications 信息
 - 全局配置： 
 
@@ -61,4 +62,4 @@ grammar_cjkRuby: true
 3. sharding元信息保存在pcs内存，并持久化到disk
 4. 全局配置信息存在哪里？
 5. DDL: 为什么要存在meta data内？
-
+6. meta-data在各node间，需要保证一致性吗
