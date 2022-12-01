@@ -156,6 +156,13 @@ Cloud Storage                   Page Server                           Safekeeper
 ## related data structures
 
 ```rust
+pub struct KeySpace {
+    /// Contiguous ranges of keys that belong to the key space. In key order,
+    /// and with no overlap.
+    pub ranges: Vec<Range<Key>>,
+}
+
+
 ///
 /// Represents a partitioning of the key space.
 ///
@@ -202,27 +209,6 @@ pub struct Timeline {
     // them yet.
     disk_consistent_lsn: AtomicLsn,
 
-    // Parent timeline that this timeline was branched from, and the LSN
-    // of the branch point.
-    ancestor_timeline: Option<Arc<Timeline>>,
-    ancestor_lsn: Lsn,
-
-    // Metrics
-    metrics: TimelineMetrics,
-
-    /// If `true`, will backup its files that appear after each checkpointing to the remote storage.
-    upload_layers: AtomicBool,
-
-    /// Ensures layers aren't frozen by checkpointer between
-    /// [`Timeline::get_layer_for_write`] and layer reads.
-    /// Locked automatically by [`TimelineWriter`] and checkpointer.
-    /// Must always be acquired before the layer map/individual layer lock
-    /// to avoid deadlock.
-    write_lock: Mutex<()>,
-
-    /// Used to avoid multiple `flush_loop` tasks running
-    flush_loop_started: Mutex<bool>,
-
     /// layer_flush_start_tx can be used to wake up the layer-flushing task.
     /// The value is a counter, incremented every time a new flush cycle is requested.
     /// The flush cycle counter is sent back on the layer_flush_done channel when
@@ -230,19 +216,6 @@ pub struct Timeline {
     layer_flush_start_tx: tokio::sync::watch::Sender<u64>,
     /// to be notified when layer flushing has finished, subscribe to the layer_flush_done channel
     layer_flush_done_tx: tokio::sync::watch::Sender<(u64, anyhow::Result<()>)>,
-
-    /// Layer removal lock.
-    /// A lock to ensure that no layer of the timeline is removed concurrently by other tasks.
-    /// This lock is acquired in [`Timeline::gc`], [`Timeline::compact`],
-    /// and [`Tenant::delete_timeline`].
-    layer_removal_cs: Mutex<()>,
-
-    // Needed to ensure that we can't create a branch at a point that was already garbage collected
-    pub latest_gc_cutoff_lsn: Rcu<Lsn>,
-
-    // List of child timelines and their branch points. This is needed to avoid
-    // garbage collecting data that is still needed by the child timelines.
-    pub gc_info: RwLock<GcInfo>,
 
     // It may change across major versions so for simplicity
     // keep it after running initdb for a timeline.
