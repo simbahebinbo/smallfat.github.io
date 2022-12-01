@@ -314,6 +314,20 @@ fn main() {
 
 # 错误处理
 
+# RAII
+- Rust enforces RAII
+- whenever an object goes out of scope, its destructor is called and its owned resources are freed.
+
+# OwnerShip & Move
+## rules
+- one resource can only have one owner
+- ownership transferred when
+	- doing assignments (let x = y) or
+	- passing function arguments by value (foo(x))
+- After moving resources, the previous owner can no longer be used
+
+## 
+
 # 模块/包/箱
 - 包：
 	- 包含一个或多个 crate 内的功能。
