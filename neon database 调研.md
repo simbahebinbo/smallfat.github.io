@@ -112,12 +112,14 @@ Cloud Storage                   Page Server                           Safekeeper
 	- When enough L0 files have been accumulated, they are ***merged*** together and ***sliced*** per key-space
 	- 此处的key是指merge以后，形成的segment file内wal record的地址
 	- covers only part of the key range is called a L1 file
+	
  ```
      000000000000000000000000000000000000-FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF__000000578C6B29-0000000057A50051
  ```
  
  
 ###### Layer
+
 1. state
 - In-memory
 - on-disk
@@ -130,13 +132,7 @@ Cloud Storage                   Page Server                           Safekeeper
 - image file 
     contains a ***snapshot*** of all keys at a particular LSN
 	
-	1. page data？
-	page data
-	
-	2. how to generate?
-		
-	
-	3. file name format: 
+
 ```
     000000067F000032BE0000400000000070B6-000000067F000032BE0000400000000080B6__00000000346BC568
               start key                          end key                           LSN
@@ -155,6 +151,137 @@ Cloud Storage                   Page Server                           Safekeeper
 1. flush WALs from memory to disk in page-server?
 2. recycle WAL files in safe-keepers above
 3. free up memory that occupied by WALs above
+
+# image file details
+## related data structures
+
+```rust
+///
+/// Represents a partitioning of the key space.
+///
+/// The only kind of partitioning we do is to partition the key space into
+/// partitions that are roughly equal in physical size (see KeySpace::partition).
+/// But this data structure could represent any partitioning.
+///
+pub struct KeyPartitioning {
+    pub parts: Vec<KeySpace>,
+}
+
+pub struct Timeline {
+    pub tenant_id: TenantId,
+    pub timeline_id: TimelineId,
+    pub layers: RwLock<LayerMap>,
+    last_freeze_at: AtomicLsn,
+    // Atomic would be more appropriate here.
+    last_freeze_ts: RwLock<Instant>,
+
+    // WAL redo manager
+    walredo_mgr: Arc<dyn WalRedoManager + Sync + Send>,
+
+    // What page versions do we hold in the repository? If we get a
+    // request > last_record_lsn, we need to wait until we receive all
+    // the WAL up to the request. The SeqWait provides functions for
+    // that. TODO: If we get a request for an old LSN, such that the
+    // versions have already been garbage collected away, we should
+    // throw an error, but we don't track that currently.
+    //
+    // last_record_lsn.load().last points to the end of last processed WAL record.
+    //
+    // We also remember the starting point of the previous record in
+    // 'last_record_lsn.load().prev'. It's used to set the xl_prev pointer of the
+    // first WAL record when the node is started up. But here, we just
+    // keep track of it.
+    last_record_lsn: SeqWait<RecordLsn, Lsn>,
+
+    // All WAL records have been processed and stored durably on files on
+    // local disk, up to this LSN. On crash and restart, we need to re-process
+    // the WAL starting from this point.
+    //
+    // Some later WAL records might have been processed and also flushed to disk
+    // already, so don't be surprised to see some, but there's no guarantee on
+    // them yet.
+    disk_consistent_lsn: AtomicLsn,
+
+    // Parent timeline that this timeline was branched from, and the LSN
+    // of the branch point.
+    ancestor_timeline: Option<Arc<Timeline>>,
+    ancestor_lsn: Lsn,
+
+    // Metrics
+    metrics: TimelineMetrics,
+
+    /// If `true`, will backup its files that appear after each checkpointing to the remote storage.
+    upload_layers: AtomicBool,
+
+    /// Ensures layers aren't frozen by checkpointer between
+    /// [`Timeline::get_layer_for_write`] and layer reads.
+    /// Locked automatically by [`TimelineWriter`] and checkpointer.
+    /// Must always be acquired before the layer map/individual layer lock
+    /// to avoid deadlock.
+    write_lock: Mutex<()>,
+
+    /// Used to avoid multiple `flush_loop` tasks running
+    flush_loop_started: Mutex<bool>,
+
+    /// layer_flush_start_tx can be used to wake up the layer-flushing task.
+    /// The value is a counter, incremented every time a new flush cycle is requested.
+    /// The flush cycle counter is sent back on the layer_flush_done channel when
+    /// the flush finishes. You can use that to wait for the flush to finish.
+    layer_flush_start_tx: tokio::sync::watch::Sender<u64>,
+    /// to be notified when layer flushing has finished, subscribe to the layer_flush_done channel
+    layer_flush_done_tx: tokio::sync::watch::Sender<(u64, anyhow::Result<()>)>,
+
+    /// Layer removal lock.
+    /// A lock to ensure that no layer of the timeline is removed concurrently by other tasks.
+    /// This lock is acquired in [`Timeline::gc`], [`Timeline::compact`],
+    /// and [`Tenant::delete_timeline`].
+    layer_removal_cs: Mutex<()>,
+
+    // Needed to ensure that we can't create a branch at a point that was already garbage collected
+    pub latest_gc_cutoff_lsn: Rcu<Lsn>,
+
+    // List of child timelines and their branch points. This is needed to avoid
+    // garbage collecting data that is still needed by the child timelines.
+    pub gc_info: RwLock<GcInfo>,
+
+    // It may change across major versions so for simplicity
+    // keep it after running initdb for a timeline.
+    // It is needed in checks when we want to error on some operations
+    // when they are requested for pre-initdb lsn.
+    // It can be unified with latest_gc_cutoff_lsn under some "first_valid_lsn",
+    // though let's keep them both for better error visibility.
+    pub initdb_lsn: Lsn,
+
+    /// When did we last calculate the partitioning?
+    partitioning: Mutex<(KeyPartitioning, Lsn)>,
+
+    /// Configuration: how often should the partitioning be recalculated.
+    repartition_threshold: u64,
+
+    /// Current logical size of the "datadir", at the last LSN.
+    current_logical_size: LogicalSize,
+    initial_size_computation_started: AtomicBool,
+
+    /// Information about the last processed message by the WAL receiver,
+    /// or None if WAL receiver has not received anything for this timeline
+    /// yet.
+    pub last_received_wal: Mutex<Option<WalReceiverInfo>>,
+
+    /// Relation size cache
+    pub rel_size_cache: RwLock<HashMap<RelTag, (Lsn, BlockNumber)>>,
+
+    state: watch::Sender<TimelineState>,
+}
+```
+
+## file structure
+
+## everything of key
+
+## everything of value
+
+## when and how to generate image		
+	
 
 # Q & A
 
