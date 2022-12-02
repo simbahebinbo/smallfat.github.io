@@ -15,13 +15,13 @@ grammar_cjkRuby: true
 
 ## 对流程的初步理解（暂时不考虑recovery情况）
 ### 初始化流程
-- 网络联通，节点注册，节点发现
-- pcs模块启动，从存储层载入meta-data，给存储层下发全局配置
+- 网络联通，节点发现
+- pcs模块启动并选主，从存储层载入meta-data
 
-### 写流程（没考虑DDL）
-- driver将client write request转发到对应shard primary node。
-- primary node上，computer layer解析并执行plan，数据写进page buffer，且生成了WAL。
-- 若转发过来的request没有对应的shard，pcs创建一个新的shard，并选举某个node作为新shard的leader，合并入合适的shard group。pcs将shard信息写入相应的meta data。
+### 写流程（DML）
+- driver将client write request转发到对应shard primary node (疑问：driver如何知道哪个是对应的shard primary node)。
+- shard primary node上，computer layer解析并执行plan，数据写进page buffer，且生成了对应的WAL。
+- 若发过来的request没有对应的shard，pcs创建一个新的shard，并选举某个node作为新shard的primary node(leader)，合并入对应的shard group。pcs将shard信息写入相应的meta data。
 - WAL日志将被复制到该shard的所有副本node，使用quorom协议决定wal是否复制成功。
 - primary node及相应的副本上，WAL被持久化到storage layer；同时page data也被持久化(如何持久化存储需另外考虑)。
 
@@ -47,7 +47,7 @@ grammar_cjkRuby: true
 	- 提供API接口
 	- 各节点有agent，pcs primary 向各节点agent发出命令，获取或设置各节点数据
 
-## conjecture
+## 细节推测
 1. 每个node上wal与shard的对应关系?
 	- 在compute layer，wal将被按照relation/page分解为一段段的wal，shard可以对应wal lsn为key。这样，wal与shard是一一对应的关系。
 2. shard什么被创建？ 
@@ -69,8 +69,12 @@ grammar_cjkRuby: true
 	- shard信息 ： key range/primary node/replication nodes
 	- 配置信息
 	- table 元数据
+	
 
 ## question
-1. 写DDL时，表的结构会发生变化，其元数据为什么要存在meta data内？
+1. 写DDL时，表的结构会发生变化，其元数据为什么要存在meta data内，而不是与DML相同的处理方式？
+	- 元数据指的是表的结构，比如table/index等的字段属性等。数据是构建在元数据之上的。
+	- 在存储层，表结构的元数据是单独存储的。
+	- 在计算层，DDL被执行，表结构
 2. meta-data在各node间，需要保证一致性吗?
 
