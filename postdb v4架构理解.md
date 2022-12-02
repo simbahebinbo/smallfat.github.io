@@ -19,16 +19,16 @@ grammar_cjkRuby: true
 - pcs模块启动并选主，从存储层载入meta-data
 
 ### 写流程（DML）
-- driver将client write request转发到对应shard primary node (疑问：driver如何知道哪个是对应的shard primary node)。
+- driver将client write request转发到对应shard primary node 。
 - shard primary node上，computer layer解析并执行plan，数据写进page buffer，且生成了对应的WAL。
-- 若发过来的request没有对应的shard，pcs创建一个新的shard，并选举某个node作为新shard的primary node(leader)，合并入对应的shard group。pcs将shard信息写入相应的meta data。
+- 若发过来的request没有对应的shard，创建一个新的shard，并选举某个node作为新shard的primary node(leader)，合并入对应的shard group。将shard信息写入相应的meta data。
 - WAL日志将被复制到该shard的所有副本node，使用quorom协议决定wal是否复制成功。
-- primary node及相应的副本上，WAL被持久化到storage layer；同时page data也被持久化(如何持久化存储需另外考虑)。
+- primary node及相应的副本上，WAL被持久化到storage layer；同时page data也被持久化。
 
 ### 读流程
 - driver将client read request转发到某个node。
 - node 解析该request
-- 依据request中不同shard的数据，分别到shard所在的primary node上读取数据。shard对应的primary node号，从pcs查询可知。
+- 依据request中不同shard的数据，分别到shard所在的primary node上读取数据。shard对应的primary node号，从接口查询可知。
 
 ## 扩容/缩容
 - 新增node时，pcs根据负载均衡原则调整shard分布，从负载重的node reload一些shard-group到新的node，并更新meta data
@@ -37,8 +37,6 @@ grammar_cjkRuby: true
 
 ## pcs的功能
 - 进行pcs leader election，确定pcs primary node。
-- 创建shard和shard group，记录相关信息到meta data中，并作持久化
-- 进行shard leader election，确定shard的leader。
 - 扩容/缩容
 	- 扩容新增node时，pcs primary node根据负载均衡原则调整shard分布，从负载重的node reload一些shard-group到新的node，并更新meta data
 	- 缩容减少node时，从meta data中取得该node的shard/shard group/wal信息，pcs primary node根据负载均衡原则调整shard分布，并在目标node中replay相关wal
@@ -46,6 +44,9 @@ grammar_cjkRuby: true
 - 全局配置/统一监控/日志/Tracing
 	- 提供API接口
 	- 各节点有agent，pcs primary 向各节点agent发出命令，获取或设置各节点数据
+
+- ??创建shard和shard group，记录相关信息到meta data中，并作持久化
+- ??进行shard leader election，确定shard的leader。
 
 ## 细节推测
 1. 每个node上wal与shard的对应关系?
@@ -75,6 +76,5 @@ grammar_cjkRuby: true
 1. 写DDL时，表的结构会发生变化，其元数据为什么要存在meta data内，而不是与DML相同的处理方式？
 	- 元数据指的是表的结构，比如table/index等的字段属性等。数据是构建在元数据之上的。
 	- 在存储层，表结构的元数据是单独存储的。
-	- 在计算层，DDL被执行，表结构
 2. meta-data在各node间，需要保证一致性吗?
 
