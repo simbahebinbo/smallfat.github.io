@@ -21,16 +21,16 @@ grammar_cjkRuby: true
 ### 写流程（DML）
 - driver将client write request转发到对应shard primary node 。
 - shard primary node上，computer layer解析并执行plan，数据写进page buffer，且生成了对应的WAL。
-- 若发过来的request没有对应的shard，创建一个新的shard，并选举某个node作为新shard的primary node(leader)，合并入对应的shard group。将shard信息写入相应的meta data。
+- 若发过来的request没有对应的shard，创建一个新的shard，并选举某个node作为新shard的primary node(leader)，合并入对应的shard group。将shard信息写入相应的meta data。(create table)
 - WAL日志将被复制到该shard的所有副本node，使用quorom协议决定wal是否复制成功。
 - primary node及相应的副本上，WAL被持久化到storage layer；同时page data也被持久化。
 
 ### 读流程
 - driver将client read request转发到某个node。
 - node 解析该request
-- 依据request中不同shard的数据，分别到shard所在的primary node上读取数据。shard对应的primary node号，从接口查询可知。
+- 依据request中不同shard的数据，分别到primary  shard所在的node上读取数据（根据读策略）。shard对应的primary node号，从接口查询可知。
 
-## 扩容/缩容
+## 扩容/缩容（作为长期任务调度）
 - 新增node时，pcs根据负载均衡原则调整shard分布，从负载重的node reload一些shard-group到新的node，并更新meta data
 - 减少node时，从meta data中取得该node的shard/shard group/wal信息，pcs根据负载均衡原则调整shard分布，并在目标node中replay相关wal
 
@@ -41,19 +41,18 @@ grammar_cjkRuby: true
 	- 扩容新增node时，pcs primary node根据负载均衡原则调整shard分布，从负载重的node reload一些shard-group到新的node，并更新meta data
 	- 缩容减少node时，从meta data中取得该node的shard/shard group/wal信息，pcs primary node根据负载均衡原则调整shard分布，并在目标node中replay相关wal
 - 提供查询接口，查询shard信息：shard_key_range/primary_node/replications 信息
-- 全局配置/统一监控/日志/Tracing
-	- 提供API接口
+- 全局配置/统一监控/日志/Tracing（控制命令）
 	- 各节点有agent，pcs primary 向各节点agent发出命令，获取或设置各节点数据
 
-- ??创建shard和shard group，记录相关信息到meta data中，并作持久化
-- ??进行shard leader election，确定shard的leader。
+- 创建shard和shard group，记录相关信息到meta data中，并作持久化
+- pcs primary直接指派shard primary(根据策略进行指派)。
 
 ## 细节推测
 1. 每个node上wal与shard的对应关系?
 	- 在compute layer，wal将被按照relation/page分解为一段段的wal，shard可以对应wal lsn为key。这样，wal与shard是一一对应的关系。
 2. shard什么被创建？ 
 	- 在wal被compute layer创建之后
-3. shard的key
+3. shard的key（partition/pkey range）
 	- 同第一点分析
 4. shard key-range生成策略
 	- 范围
