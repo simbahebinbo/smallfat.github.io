@@ -326,7 +326,29 @@ fn main() {
 	- passing function arguments by value (foo(x))
 - After moving resources, the previous owner can no longer be used
 
-## 
+## 区分Ownership转移
+- 不是所有assign或者“传参”都是Move
+- 需要区分什么情况下是copy，什么情况下是move (如：引用不是move)
+
+## Mutability change
+Mutability of data can be changed when ownership is transferred.
+
+# Borrow
+## concept
+- objects can be passed by reference (&T)
+- borrow mechanism is based on reference 
+- The compiler statically guarantees (via its borrow checker) that references always point to valid objects
+- while references to an object exist, the object cannot be destroyed. 即：被借用且没有归还的object resource，不能被move ownership
+
+## mutable
+- 传递引用，使用borrow时，可以使用mut修饰。
+- 变量mut属性在borrow语境下的影响，类似c++ 下const
+	- 原变量immutable，borrow时mutable的，最终不能mutable
+	- 原变量mutable, borrow时immutable的，最终不能mutable
+
+
+## ref pattern
+
 
 # 模块/包/箱
 - 包：
