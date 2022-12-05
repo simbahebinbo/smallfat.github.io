@@ -8,12 +8,16 @@ grammar_cjkRuby: true
 # 在postdb-v4系统中的位置
 
 # 功能
+## 状态与转换
+
+## pcs 选举
+
+## shard/shard group管理
+
+
+## 扩容/缩容
 ## 系统元信息管理
 ## 系统控制信息管理(control info)？
-## primary pcs 选举
-## shard/shard group管理
-## 扩容/缩容
-
 
 # 接口
 
