@@ -22,7 +22,7 @@ grammar_cjkRuby: true
 ## 系统元信息管理
 ## 系统控制信息管理(control info)？
 
-## 状态图
+# 状态图
 # 接口
 
 # 异常处理
