@@ -25,5 +25,5 @@ grammar_cjkRuby: true
 # 状态图
 # 接口
 
-# 异常处理
+# 容错机制
 
