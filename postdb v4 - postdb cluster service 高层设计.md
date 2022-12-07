@@ -21,6 +21,8 @@ grammar_cjkRuby: true
 
 ## pcs 选举
 
+## cluster node状态管理
+
 ## shard/shard group管理
 
 ### 创建/分裂/合并/平移
