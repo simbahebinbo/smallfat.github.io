@@ -33,7 +33,7 @@ grammar_cjkRuby: true
 ## 系统元信息
 ### 元信息类别
 - shard 元信息: shard id/key range/primary node/replica nodes
-- shard-group 元信息：shard group id/
+- shard-group 元信息
 - 配置信息
 
 ### 元信息同步机制
@@ -46,8 +46,12 @@ grammar_cjkRuby: true
 
 ## shard/shard group管理
 
-### 注册shard信息
-### 注销shard信息
+### 创建shard/shard group
+
+
+### 回收shard/shard group
+### 平移/分裂/合并
+
 
 ## 扩容/缩容
 
