@@ -52,9 +52,14 @@ grammar_cjkRuby: true
 - shard-group 元信息
 - 配置信息
 
-### 元信息同步
+### 元信息同步机制
+
+#### 使用raft协议进行元信息同步
 
 ![绘图](./attachments/1670395352769.drawio.svg)
+#### 效率
+
+
 
 # 接口
 
