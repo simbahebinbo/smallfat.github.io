@@ -47,15 +47,15 @@ grammar_cjkRuby: true
 ## shard/shard group管理
 
 ### 创建shard
-#### 策略
-- key range策略
-- 位置分布策略
-- 副本策略
+#### 分片策略
+- key range
+- 位置分布
+- 副本数
 
 #### 方法
 - 在primary pcs上执行创建逻辑
-- 根据key range策略，计算shard key range，此range为一个左闭右开的区间
-- 根据位置分布策略和副本策略，计算primary shard node/replica shard nodes
+- 根据分片策略，计算shard key range，此range为一个左闭右开的区间
+- 根据分片策略，计算primary shard node/replica shard nodes
 - 将上述信息写入metadata，并同步到replica pcs
  
 
