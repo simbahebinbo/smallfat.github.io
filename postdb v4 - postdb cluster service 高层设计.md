@@ -92,6 +92,8 @@ grammar_cjkRuby: true
 ### 下发机制
 ### 命令类型
 - 配置
+	- 整体配置
+	- 单项配置
 - 日志命令
 - tracing
 - 监控
