@@ -13,9 +13,9 @@ grammar_cjkRuby: true
 
 ![绘图](./attachments/1670310960410.drawio.svg)
 
-- pcs_recovery
-- pcs_election
-- pcs_service_available
+- pcs_recovery - pcs数据recovery
+- pcs_election - 选举 primary pcs
+- pcs_running - 正式提供pcs 服务
 
 # 功能
 
@@ -54,7 +54,7 @@ grammar_cjkRuby: true
 	- insert/update
 	- ...
 
-- 数据插入/修改/删除操作只需要从pcs读，不涉及raft一致性操作，效率不受影响
+- 效率 - 数据插入/修改/删除操作只需要从pcs读，不涉及raft一致性操作，数据读写效率不受影响
 
 ## shard/shard group管理
 
@@ -83,11 +83,14 @@ grammar_cjkRuby: true
 - 同步到relica pcs中
 
 ### 平移/分裂/合并
-- 待研究
+- waiting
 
 ## 扩容/缩容
+- waiting
 
 ## 控制命令下发
+
+
 
 # 接口
 
