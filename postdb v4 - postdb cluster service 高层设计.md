@@ -89,7 +89,8 @@ grammar_cjkRuby: true
 - waiting
 
 ## 控制命令下发
-
+### 下发机制
+### 命令类型
 
 # 容错机制
 
