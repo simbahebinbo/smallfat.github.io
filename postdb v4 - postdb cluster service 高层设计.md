@@ -91,8 +91,5 @@ grammar_cjkRuby: true
 ## 控制命令下发
 
 
-
-# 接口
-
 # 容错机制
 
