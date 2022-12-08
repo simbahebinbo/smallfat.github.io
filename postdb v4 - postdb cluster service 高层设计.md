@@ -32,7 +32,7 @@ grammar_cjkRuby: true
 
 ## 系统元信息
 ### 元信息类别
-- shard 元信息: shard id/key range/primary node/replica nodes
+- shard 元信息: shard id/key range of shard/primary node/replica nodes
 - shard-group 元信息
 - 配置信息
 
@@ -41,27 +41,49 @@ grammar_cjkRuby: true
 #### 使用raft协议进行元信息同步
 
 ![绘图](./attachments/1670395352769.drawio.svg)
-#### 效率
+#### shard/shard group元信息的读写
+- 写(只能在primary pcs上)
+	- create table(index...) - 创建分片
+	- drop table(index...) - 回收分片
+	- 平移分片
+	- 分裂分片
+	- 合并分片
 
+- 读(任一个pcs上)
+	- select
+	- insert/update
+	- ...
+
+- 数据插入/修改/删除操作只需要从pcs读，不涉及raft一致性操作，效率不受影响
 
 ## shard/shard group管理
 
 ### 创建shard
 #### 分片策略
-- key range
+- key range模板
 - 位置分布
 - 副本数
+- shard-group策略
 
-#### 方法
+#### 逻辑
 - 在primary pcs上执行创建逻辑
-- 根据分片策略，计算shard key range，此range为一个左闭右开的区间
-- 根据分片策略，计算primary shard node/replica shard nodes
+- 根据分片策略，计算shard type的 key range，此range为一个左闭右开的区间
+- 根据分片策略，计算primary shard 所在的node 
+- 根据分片策略，计算replica shards 所在的nodes
+- 每个shard实例(包括primary shard/replica shards)分配一个shard-id，属于同一shard type
+- 调用存储层接口，在指定节点创建shard 实例
 - 将上述信息写入metadata，并同步到replica pcs
- 
 
 ### 回收shard
-### 平移/分裂/合并
+#### 逻辑
+- 在primary pcs上执行回收逻辑
+- 从metadata中查询目标分片的所有实例位置
+- 调用存储层接口，在指定节点回收shard实例
+- 清除metadata中对应shard信息
+- 同步到relica pcs中
 
+### 平移/分裂/合并
+- 待研究
 
 ## 扩容/缩容
 
