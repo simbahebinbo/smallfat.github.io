@@ -60,7 +60,7 @@ grammar_cjkRuby: true
 
 ### 创建shard
 #### 分片策略
-- key range模板
+- key range公式模板
 - 位置分布
 - 副本数
 - shard-group策略
