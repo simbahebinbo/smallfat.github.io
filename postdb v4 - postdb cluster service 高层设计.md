@@ -60,19 +60,23 @@ grammar_cjkRuby: true
 
 ### 创建shard
 #### 分片策略
-- key range公式模板
-- 位置分布
-- 副本数
+- key range公式模板 - 1. 按容量切割  2. [start -end) 
+- 位置分布(primary shard/replica shard)
+	- 指定机器
+	- 负载均衡
+	- 考虑地理位置
+- 副本数(全局参数)
 - shard-group策略
+	- 用户可设置，优化系统效率
 
 #### 逻辑
 - 在primary pcs上执行创建逻辑
 - 根据分片策略，计算shard type的 key range，此range为一个左闭右开的区间
 - 根据分片策略，计算primary shard 所在的node 
 - 根据分片策略，计算replica shards 所在的nodes
-- 每个shard实例(包括primary shard/replica shards)分配一个shard-id，属于同一shard type
-- 调用存储层接口，在指定节点创建shard 实例
-- 将上述信息写入metadata，并同步到replica pcs
+- 每个shard实例(包括primary shard/replica shards)都是同一个shard-id
+- 将上述信息写入metadata，并同步到replica pcs/learner
+- primary pcs 通知指定node为primary shard
 
 ### 回收shard
 #### 逻辑
@@ -91,12 +95,13 @@ grammar_cjkRuby: true
 ## 控制命令下发
 ### 下发机制
 ### 命令类型
-- 配置
+- 配置（WAL）
 	- 整体配置
 	- 单项配置
 - 日志命令
 - tracing
 - 监控
 
-# 容错机制
-
+# question
+1. Online DDL：
+元数据的变更，由PCS 写入，每个表有自己的元数据多版本;
