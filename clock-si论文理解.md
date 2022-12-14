@@ -65,12 +65,10 @@ SI is a MVCC scheme that with 3 properties:
 ![enter description here](./images/Screenshot_from_2022-12-14_09-14-43.png)
 
 two crucial points should be mentioned:
-
 ## timestamp assignment
 - When transaction T is initialized at its originating partition (lines 1-3), it receives the snapshot timestamp by reading the local physical clock,
 
 ## consistent snapshot reads
-
 ### snapshot unavailability due to pending commit
 - 此处对应
 
@@ -79,11 +77,6 @@ two crucial points should be mentioned:
 # Commit Protocol
 
 ![enter description here](./images/Screenshot_from_2022-12-14_09-14-54.png)
-
-
-
-
-
 
 # Questions
 1. commit protocol为什么没有涉及多个tx write-write的场景？
