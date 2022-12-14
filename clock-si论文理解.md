@@ -54,7 +54,7 @@ SI is a MVCC scheme that with 3 properties:
 	
 	- the pending commit of an update transaction can cause a snapshot to be unavailable
 		- pending commit 导致了T2的snapshot不可用，因为t''此处，取任何一个值(之前的或者现在的)，都有可能不符合SI的三个属性
-			- we cannot return the value written by T1 , because we do not yet know if the commit will succeed, 
+			- we cannot return the value written by T 1 , because we do not yet know if the commit will succeed, 
 			- but we can also not return the earlier value, because, if T1’s commit succeeds, this older value will not be part of a consistent snapshot at t'' .
 
 ![enter description here](./images/Screenshot_from_2022-12-13_15-12-50.png)
@@ -63,10 +63,6 @@ SI is a MVCC scheme that with 3 properties:
 ## Read Protocol
 
 ![enter description here](./images/Screenshot_from_2022-12-14_09-14-43.png)
-
-# Commit Protocol
-
-![enter description here](./images/Screenshot_from_2022-12-14_09-14-54.png)
 
 two crucial points should be mentioned:
 
@@ -79,6 +75,12 @@ two crucial points should be mentioned:
 - 此处对应
 
 ### snapshot unavailability due to clock skew
+
+# Commit Protocol
+
+![enter description here](./images/Screenshot_from_2022-12-14_09-14-54.png)
+
+
 
 
 
