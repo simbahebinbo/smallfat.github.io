@@ -1,5 +1,5 @@
 ---
-title: postdb v4 - postdb cluster service 高层设计
+title: postdb v4 - postdb cluster service 设想
 grammar_cjkRuby: true
 ---
 # 背景与目标
