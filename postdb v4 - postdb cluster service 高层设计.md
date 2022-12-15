@@ -35,6 +35,9 @@ pcs 节点在进行选举时，状态迁移如下图所示：
 
 ![enter description here](./images/Screenshot_from_2022-12-07_09-43-40.png)
 
+## pcs间元信息同步
+
+![绘图](./attachments/1671107410817.drawio.svg)
 
 ## cluster node状态管理
 
@@ -49,12 +52,8 @@ pcs 节点在进行选举时，状态迁移如下图所示：
 - shard-group 元信息
 - 配置信息
 
-### 元信息同步机制
 
-#### 使用raft协议进行元信息同步
-
-![绘图](./attachments/1670395352769.drawio.svg)
-#### shard/shard group元信息的读写
+### shard/shard group元信息的读写
 - 写(只能在primary pcs上)
 	- create table(index...) - 创建分片
 	- drop table(index...) - 回收分片
@@ -66,8 +65,6 @@ pcs 节点在进行选举时，状态迁移如下图所示：
 	- select
 	- insert/update
 	- ...
-
-- 效率 - 数据插入/修改/删除操作只需要从pcs读，不涉及raft一致性操作，数据读写效率不受影响
 
 ## shard/shard group管理
 
