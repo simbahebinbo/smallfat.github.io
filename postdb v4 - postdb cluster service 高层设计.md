@@ -7,21 +7,34 @@ grammar_cjkRuby: true
 
 # 在postdb-v4系统中的位置
 
+![enter description here](./images/Screenshot_from_2022-12-15_09-48-31.png)
+
+![绘图](./attachments/1671085604419.drawio.svg)
+
 # 状态图
 
 ## pcs node 状态
 
 ![绘图](./attachments/1670310960410.drawio.svg)
 
-- pcs_recovery - pcs数据recovery
 - pcs_election - 选举 primary pcs
-- pcs_running - 正式提供pcs 服务
+- pcs_recovery - pcs数据recovery
+- pcs_running - 正式提供pcs 服务，此状态是pcs node的稳定态
 
 # 功能
+## pcs group
 
-## pcs 选举
+![PCG Group](./attachments/1671089515758.drawio.svg)
+- 整个cluster中，pcs 用来控制整个cluster的状态变化。使用pcs group来保证pcs node的可用性
+- pcs group之间采用与Raft类似的协议，选举primary pcs节点，并在pcs之间同步元信息
+
+
+### pcs 选举
+
+pcs 节点在进行选举时，状态迁移如下图所示：
 
 ![enter description here](./images/Screenshot_from_2022-12-07_09-43-40.png)
+
 
 ## cluster node状态管理
 
