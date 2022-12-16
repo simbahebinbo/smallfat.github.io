@@ -83,7 +83,7 @@ grammar_cjkRuby: true
 	
 - 位置分布(选定分片所在节点)
 	- 指定机器
-	- 负载均衡(考虑地理位置)
+	- 负载均衡(考虑地理位置，节点负载，shard-group等因素)
 	
 - 副本数(全局参数)
 
@@ -91,10 +91,9 @@ grammar_cjkRuby: true
 	- 用户可设置，优化系统效率
 
 ##### 逻辑
-- 在primary pcs上执行创建逻辑
-- 根据分片策略，计算shard type的 key range，此range为一个左闭右开的区间
-- 根据分片策略，计算primary shard 所在的node 
-- 根据分片策略，计算replica shards 所在的nodes
+- 在执行create table(或类似的创建类DDL语句)时，在primary pcs上执行创建逻辑
+- 根据分片策略，计算shard type的 key range
+- 根据分片策略，计算shard 所在的storage node 
 - 每个shard实例(包括primary shard/replica shards)都是同一个shard-id
 - 将上述信息写入metadata，并同步到replica pcs/learner
 - primary pcs 通知指定node为primary shard
