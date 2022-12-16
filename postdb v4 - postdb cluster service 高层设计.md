@@ -63,11 +63,10 @@ grammar_cjkRuby: true
 
 ### 元信息的读写场景
 - 写(只能在primary pcs上)
-	- create table(index...) - 创建分片
-	- drop table(index...) - 回收分片
-	- 平移分片
-	- 分裂分片
-	- 合并分片
+	- create table(...) - 创建分片
+	- drop table(...) - 回收分片
+	- 平移分片(主动/被动)
+	- 分裂分片(主动/被动)
 
 - 读(任一个pcs上)
 	- select
