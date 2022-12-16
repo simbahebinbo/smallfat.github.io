@@ -103,11 +103,8 @@ grammar_cjkRuby: true
 - 清除metadata中对应shard信息
 - 同步到relica pcs中
 
-#### 平移/分裂/合并
-- waiting
+#### 读一致性
 
-#### 扩容/缩容
-- waiting
 
 ## cluster node状态管理
 
