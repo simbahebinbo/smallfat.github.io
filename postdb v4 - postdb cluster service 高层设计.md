@@ -34,7 +34,7 @@ grammar_cjkRuby: true
 - pcs 节点在进行选举时，状态迁移如下图所示：
 
 ![enter description here](./images/Screenshot_from_2022-12-07_09-43-40.png)
-- 
+- 节点选举是在pcs 节点之间进行的，pcs 节点是candidate 与 follower
 
 
 ## pcs间元信息同步
@@ -44,7 +44,7 @@ grammar_cjkRuby: true
 	1. primary pcs节点接收到write请求，写入MetaData Buffer
 	2. primary pcs节点生成PCS WAL
 	3. PCS WAL同步到replica pcs节点
-	4. replica pcs节点接受到PCS WAL后，进行持久化并replay WAL，数据写入Buffer	
+	4. replica pcs节点收到PCS WAL后，进行持久化并replay WAL，数据写入Buffer	
 
 ## cluster node状态管理
 
