@@ -9,7 +9,7 @@ grammar_cjkRuby: true
 
 ![enter description here](./images/Screenshot_from_2022-12-15_09-48-31.png)
 
-![绘图](./attachments/1671085604419.drawio.svg)
+
 
 # 状态图
 
@@ -46,7 +46,7 @@ grammar_cjkRuby: true
 	3. PCS WAL同步到replica pcs节点
 	4. replica pcs节点收到PCS WAL后，进行持久化并replay WAL，数据写入Buffer	
 
-## 系统元信息
+## pcs元信息
 ### 元信息类别
 - shard
 	- shard id
