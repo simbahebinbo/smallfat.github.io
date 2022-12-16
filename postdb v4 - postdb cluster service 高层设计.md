@@ -46,21 +46,19 @@ grammar_cjkRuby: true
 	3. PCS WAL同步到replica pcs节点
 	4. replica pcs节点收到PCS WAL后，进行持久化并replay WAL，数据写入Buffer	
 
-## cluster node状态管理
-
-- primary pcs利用心跳机制定时收集cluster内各node的状态，包括：
-	- 在线情况
-	- 其他业务指标(shard数，shard总占用资源，io负载，cpu负载，memory占用，硬盘空闲容量等)
-- 此状态信息保存在内存cache中，无需持久化，无需被复制到replica pcs: 切换primary pcs场景下，新的primary pcs会重新收集最新cluster node最新状态信息
-
 ## 系统元信息
 ### 元信息类别
-- shard 元信息: shard id/key range of shard/primary node/replica nodes
-- shard-group 元信息
+- shard
+	- shard id
+	- key range of shard
+	- primary node
+	- replica nodes
+- shard-group
 - 配置信息
+- system table
 
 
-### shard/shard group元信息的读写
+### 元信息的读写
 - 写(只能在primary pcs上)
 	- create table(index...) - 创建分片
 	- drop table(index...) - 回收分片
@@ -108,6 +106,14 @@ grammar_cjkRuby: true
 
 ## 扩容/缩容
 - waiting
+
+## cluster node状态管理
+
+- primary pcs利用心跳机制定时收集cluster内各node的状态，包括：
+	- 在线情况
+	- 其他业务指标(shard数，shard总占用资源，io负载，cpu负载，memory占用，硬盘空闲容量等)
+- 此状态信息保存在内存cache中，无需持久化，无需被复制到replica pcs: 切换primary pcs场景下，新的primary pcs会重新收集最新cluster node最新状态信息
+
 
 ## 控制命令下发
 ### 下发机制
