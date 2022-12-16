@@ -100,9 +100,9 @@ grammar_cjkRuby: true
 
 
 #### 回收shard
-- 在primary pcs上执行回收逻辑
-- 从metadata中查询目标分片的所有实例位置
-- 调用存储层接口，在指定节点回收shard实例
+- 在执行drop table(或类似的创建类DDL语句)时，在primary pcs上执行回收逻辑
+- 从metadata中查询目标分片的primary shard node位置
+- 发送命令给primary shard node，回收shard实例
 - 清除metadata中对应shard信息
 - 同步到relica pcs中
 
