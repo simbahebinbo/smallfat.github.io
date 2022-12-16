@@ -37,7 +37,13 @@ pcs 节点在进行选举时，状态迁移如下图所示：
 
 ## pcs间元信息同步
 
-![绘图](./attachments/1671107410817.drawio.svg)
+![元信息同步](./attachments/1671107410817.drawio.svg)
+- pcs node之间数据同步是通过同步“PCS WAL”到replica pcs 节点完成的
+	1. primary pcs节点接收到write请求，写入MetaData Buffer
+	2. primary pcs节点生成PCS WAL
+	3. PCS WAL以Quorum协议同步到replica pcs节点
+	4. replica pcs节点接受到PCS WAL后，进行持久化并replay WAL，数据写入Buffer
+	5. Quorum协议成功，设置位置标记表示此次写入成功
 
 ## cluster node状态管理
 
