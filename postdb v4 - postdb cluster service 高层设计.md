@@ -77,12 +77,16 @@ grammar_cjkRuby: true
 
 #### 创建shard
 ##### 分片策略
-- key range公式模板 - 1. 按容量切割  2. [start -end) 
-- 位置分布(primary shard/replica shard)
+- key range
+	1. 按照partition分区要求，每个分片有[start, end) range。由于partition条件较复杂（多字段分区，子分区等），因此shard的key range设置可能也较为复杂，视partition条件而定
+	2. 分片还需要按容量切割。创建分片时，分片 key range与partition一致；在分片容量达到策略设置值时，分片会自动分裂，key range发生改变
+	
+- 位置分布(选定分片所在节点)
 	- 指定机器
-	- 负载均衡
-	- 考虑地理位置
+	- 负载均衡(考虑地理位置)
+	
 - 副本数(全局参数)
+
 - shard-group策略
 	- 用户可设置，优化系统效率
 
