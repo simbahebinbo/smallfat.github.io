@@ -54,6 +54,7 @@ grammar_cjkRuby: true
 	- primary node
 	- replica nodes
 	- shard-group id
+	
 - shard-group
 	- shard-group id
 	- shard list
@@ -68,10 +69,10 @@ grammar_cjkRuby: true
 	- 平移分片(主动/被动)
 	- 分裂分片(主动/被动)
 
-- 读(任一个pcs上)
+- 读(任一个node上)
 	- select
 	- insert/update
-	- ...
+	- client driver
 
 ### shard/shard group管理
 
@@ -79,11 +80,12 @@ grammar_cjkRuby: true
 ##### 分片策略
 - key range
 	1. 按照partition分区要求，每个分片有[start, end) range。由于partition条件较复杂（多字段分区，子分区等），因此shard的key range设置可能也较为复杂，视partition条件而定
-	2. 分片还需要按容量切割。创建分片时，分片 key range与partition一致；在分片容量达到策略设置值时，分片会自动分裂，key range发生改变
+	2. 分片还需要按容量切割。创建分片时，分片 key range与partition一致；在分片容量达到策略设置值时，分片会自动分裂，key range发生改变??
 	
 - 位置分布(选定分片所在节点)
-	- 指定机器
+	*- 指定机器*
 	- 负载均衡(考虑地理位置，节点负载，shard-group等因素)
+	- 可以允许用户指定策略
 	
 - 副本数(全局参数)
 
@@ -96,6 +98,7 @@ grammar_cjkRuby: true
 - 根据分片策略，计算shard 所在的 nodes(包括primary shard/replica shard) 
 - 将上述信息写入primary pcs的metadata，并同步PCS WAL到replica pcs
 - replica pcs持久化并回放PCS WAL
+- Quorum成功，选择primary shard node
 - primary pcs 通知指定node为primary shard以及相关的shard信息，此后关于此shard的事宜由此node负责
 
 
@@ -103,17 +106,18 @@ grammar_cjkRuby: true
 - 在执行drop table(或类似的创建类DDL语句)时，在primary pcs上执行回收逻辑
 - 从metadata中查询目标分片的primary shard node位置
 - 发送命令给primary shard node，回收shard实例
-- 清除metadata中对应shard信息
+- 清除metadata中对应shard信息(标记)
 - 同步到relica pcs中
 
 #### 读一致性
-
+- 每个wal都是逻辑上独立的，pcs wal也是同样的
+- select怎么找到对应shard的lsn号，以便与v3同样的机制保证读一致性？
 
 ## cluster node状态管理
 
 - primary pcs利用心跳机制定时收集cluster内各node的状态，包括：
 	- 在线情况
-	- 其他业务指标(shard数，shard总占用资源，io负载，cpu负载，memory占用，硬盘空闲容量等)
+	- 其他业务指标(地理位置，shard数，shard总占用资源，io负载，cpu负载，memory占用，硬盘空闲容量等)
 - 此状态信息保存在内存cache中，无需持久化，无需被复制到replica pcs: 切换primary pcs场景下，新的primary pcs会重新收集最新cluster node最新状态信息
 
 
