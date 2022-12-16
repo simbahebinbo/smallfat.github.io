@@ -93,10 +93,11 @@ grammar_cjkRuby: true
 ##### 逻辑
 - 在执行create table(或类似的创建类DDL语句)时，在primary pcs上执行创建逻辑
 - 根据分片策略，计算shard type的 key range
-- 根据分片策略，计算shard 所在的storage node 
-- 每个shard实例(包括primary shard/replica shards)都是同一个shard-id
-- 将上述信息写入metadata，并同步到replica pcs/learner
-- primary pcs 通知指定node为primary shard
+- 根据分片策略，计算shard 所在的 nodes(包括primary shard/replica shard) 
+- 将上述信息写入primary pcs的metadata，并同步PCS WAL到replica pcs
+- replica pcs持久化并回放PCS WAL
+- primary pcs 通知指定node为primary shard以及相关的shard信息，此后关于此shard的事宜由此node负责
+
 
 #### 回收shard
 - 在primary pcs上执行回收逻辑
