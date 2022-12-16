@@ -53,12 +53,15 @@ grammar_cjkRuby: true
 	- key range of shard
 	- primary node
 	- replica nodes
+	- shard-group id
 - shard-group
+	- shard-group id
+	- shard list
 - 配置信息
 - system table
 
 
-### 元信息的读写
+### 元信息的读写场景
 - 写(只能在primary pcs上)
 	- create table(index...) - 创建分片
 	- drop table(index...) - 回收分片
@@ -71,10 +74,10 @@ grammar_cjkRuby: true
 	- insert/update
 	- ...
 
-## shard/shard group管理
+### shard/shard group管理
 
-### 创建shard
-#### 分片策略
+#### 创建shard
+##### 分片策略
 - key range公式模板 - 1. 按容量切割  2. [start -end) 
 - 位置分布(primary shard/replica shard)
 	- 指定机器
@@ -84,7 +87,7 @@ grammar_cjkRuby: true
 - shard-group策略
 	- 用户可设置，优化系统效率
 
-#### 逻辑
+##### 逻辑
 - 在primary pcs上执行创建逻辑
 - 根据分片策略，计算shard type的 key range，此range为一个左闭右开的区间
 - 根据分片策略，计算primary shard 所在的node 
@@ -93,18 +96,17 @@ grammar_cjkRuby: true
 - 将上述信息写入metadata，并同步到replica pcs/learner
 - primary pcs 通知指定node为primary shard
 
-### 回收shard
-#### 逻辑
+#### 回收shard
 - 在primary pcs上执行回收逻辑
 - 从metadata中查询目标分片的所有实例位置
 - 调用存储层接口，在指定节点回收shard实例
 - 清除metadata中对应shard信息
 - 同步到relica pcs中
 
-### 平移/分裂/合并
+#### 平移/分裂/合并
 - waiting
 
-## 扩容/缩容
+#### 扩容/缩容
 - waiting
 
 ## cluster node状态管理
@@ -116,11 +118,6 @@ grammar_cjkRuby: true
 
 
 ## 控制命令下发
-### 下发机制
-### 命令类型
-- 配置（WAL）
-	- 整体配置
-	- 单项配置
 - 日志命令
 - tracing
 - 监控
