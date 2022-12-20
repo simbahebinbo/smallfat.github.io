@@ -48,18 +48,9 @@ grammar_cjkRuby: true
 
 ## pcs元信息
 ### 元信息类别
-- shard
-	- shard id
-	- key range of shard
-	- primary node
-	- replica nodes
-	- shard-group id
-	
-- shard-group
-	- shard-group id
-	- shard list
 - 配置信息
-- system table
+- system table (include partition/table/... 结构元数据)
+- shard
 
 
 ### 元信息的读写场景
@@ -75,7 +66,6 @@ grammar_cjkRuby: true
 	- client driver
 
 ### shard/shard group管理
-
 #### 创建shard
 ##### 分片策略
 - key range
@@ -83,7 +73,6 @@ grammar_cjkRuby: true
 	2. 分片还需要按容量切割。创建分片时，分片 key range与partition一致；在分片容量达到策略设置值时，分片会自动分裂，key range发生改变??
 	
 - 位置分布(选定分片所在节点)
-	*- 指定机器*
 	- 负载均衡(考虑地理位置，节点负载，shard-group等因素)
 	- 可以允许用户指定策略
 	
@@ -111,10 +100,9 @@ grammar_cjkRuby: true
 
 #### 读一致性
 - 每个wal都是逻辑上独立的，pcs wal也是同样的
-- select怎么找到对应shard的lsn号，以便与v3同样的机制保证读一致性？
+
 
 ## cluster node状态管理
-
 - primary pcs利用心跳机制定时收集cluster内各node的状态，包括：
 	- 在线情况
 	- 其他业务指标(地理位置，shard数，shard总占用资源，io负载，cpu负载，memory占用，硬盘空闲容量等)
