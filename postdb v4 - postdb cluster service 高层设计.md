@@ -140,6 +140,8 @@ grammar_cjkRuby: true
 - 清除metadata中对应shard信息(标记)
 - 同步到relica pcs中
 
+
+
 #### 读一致性
 - 每个wal都是逻辑上独立的，pcs wal也是同样的
 
