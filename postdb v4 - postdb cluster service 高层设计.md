@@ -107,6 +107,7 @@ grammar_cjkRuby: true
 - shard-group
 	- 由用户设置
 	- 是设置表-表绑定关系？还是shard-shard绑定关系？
+	- 针对shard，可能形成n*n的绑定关系
 	
 - 负载均衡策略	
 	- 排除哪些节点
@@ -122,22 +123,26 @@ grammar_cjkRuby: true
 	- 在存储节点安装时，已经设定地理位置(城市/中心)。此后，系统运行，此信息上报给pcs
 	- 给分片副本分配节点时，按中心位置进行分配
 
+##### primary shard node 选择
+
+
 
 #### 创建shard
 - 在执行create table(或类似的创建类DDL语句)时，在primary pcs上执行创建逻辑
 - 根据分片策略，计算shard 的 key range
-- 根据分片策略，计算shard 所在的 nodes(包括primary shard/replica shard) 
+- 根据分片策略，计算shard 所在的 nodes（存储节点） ，并选择primary shard node（计算结点）
 - 将上述信息写入primary pcs的metadata，并同步PCS WAL到replica pcs
 - replica pcs持久化并回放PCS WAL
-- Quorum成功，选择primary shard node
-- primary pcs 通知指定node为primary shard以及相关的shard信息，此后关于此shard的事宜由此node负责
+- 若Quorum成功
+- primary pcs 通知指定node为primary shard node以及发送给它相关的shard信息()，此后关于此shard的事宜由此node负责
 
 
 #### 回收shard
 - 在执行drop table(或类似的创建类DDL语句)时，在primary pcs上执行回收逻辑
 - 从metadata中查询目标分片的primary shard node位置
-- 发送命令给primary shard node，回收shard实例
-- 清除metadata中对应shard信息(标记)
+- 发送命令给primary shard node - 回收shard
+- primary shard node执行命令成功
+- pcs 清除metadata中对应shard信息(标记)
 - 同步到relica pcs中
 
 
