@@ -67,8 +67,7 @@ grammar_cjkRuby: true
 
 ### shard/shard group管理
 
-#### 分片策略
-##### partition与shard的对应关系
+#### partition与shard的对应关系
 - 原生postgresql中可以定义partition分区，指数据以range/list/hash三种方式分配进哪个分区
 - postdbv4中，shard指的是数据存在哪里，也可以有上述分片方式
 - partition与shard的分片方式是一一对应的。比如
@@ -83,9 +82,10 @@ CREATE TABLE scubagear
 ```
 上述语句以hash方式给数据进行分区，则数据分到shard中的方式依然为hash
 
+#### 分片策略
 
 ##### 分片方式
-
+在分片调度层面，分片方式决定了数据被存入了哪个分片。
 
 - range
 		1. 基于range的分片很容易实现自动分片：只需拆分或合并分片。使用基于哈希的分片的系统实现自动分片代价很高昂
@@ -101,6 +101,10 @@ CREATE TABLE scubagear
 		5. 查询范围数据效率低
 
 	- 一致性hash
+		1. 数据分布相对均匀
+		2. 随即读写单条数据较快
+		3. 能较好兼容分裂/缩容/扩容
+		4. 查询范围数据效率低
 
 ![enter description here](./images/Screenshot_from_2022-12-23_11-17-11.png)
 
@@ -108,9 +112,8 @@ CREATE TABLE scubagear
 
 ##### 副本位置
 - shard-group
-	- 由用户设置
-	- 是设置表-表绑定关系？还是shard-shard绑定关系？
-	- 针对shard，可能形成n*n的绑定关系
+	- 由用户设置表-表之间的亲和性，在计算下推时使用
+	- 针对shard，可能形成n*n的绑定关系？
 	
 - 负载均衡策略	
 	- 排除哪些节点
@@ -133,20 +136,6 @@ CREATE TABLE scubagear
 	1. 在计算结点间轮转选择，每个节点机会平等
 	2. 在候选人节点中若存在对应副本节点，优先选择副本节点
 
-##### 自动/手动分片
-- 手动分片
-	- 由用户指定分片数、分片主键(primary key)、副本数、分片范围(可选)等
-	- 在执行创建relation DDL的时候，根据上述参数，创建shard
-	- 分片合并/分裂/平移可以手动进行
-	- 缺点是数据分布不均匀。数据分布不均可能导致数据库负载不平衡，从而使其中一些节点过载，而另一些节点访问量较少。
-
-- 自动分片
-	- 系统在运行过程中，会根据系统节点负载情况，动态地进行分片合并/分裂/平移等操作，以应对某些节点过载过热等情况
-	- 最终目标是形成一个弹性伸缩的分片集群
-	
-- 问题：从需求和资源来看，先做基础的手动分片？
-
-
 #### 创建shard
 - 在执行create table(或类似的创建类DDL语句)时，在primary pcs上执行创建逻辑
 - 将create执行的结果保存进primary pcs meta data
@@ -166,22 +155,28 @@ CREATE TABLE scubagear
 - pcs 清除metadata中对应shard信息(标记)
 - 同步到relica pcs中
 
-
-#### Node变化引起的recovery操作 
-
-
-
-##### 平移shard
+#### 分裂shard
+##### range方式
+- 按范围切分。例如[1,1000)的分片，切分为[1,500)和[500,1000)
 
 
-##### 分裂shard
+##### 一致性hash方式
+
+- 在hash环上新增一个节点。如下图中t4
+![enter description here](./images/Screenshot_from_2022-12-23_11-17-48.png)
 
 
-#### 缩容
 
+##### 自动/手动分片
+- 手动分片
+	- 由用户指定分片数、分片主键(primary key)、副本数、分片范围(可选)等
+	- 在执行创建relation DDL的时候，根据上述参数，创建shard
+	- 分片合并/分裂/平移可以手动进行
+	- 缺点是数据分布不均匀。数据分布不均可能导致数据库负载不平衡，从而使其中一些节点过载，而另一些节点访问量较少。
 
-#### 扩容
-
+- 自动分片
+	- 系统在运行过程中，会根据系统节点负载情况，动态地进行分片合并/分裂/平移等操作，以应对某些节点过载过热等情况
+	- 最终目标是形成一个弹性伸缩的分片集群
 
 ## cluster node状态管理
 - primary pcs利用心跳机制定时收集cluster内各node的状态，包括：
