@@ -81,6 +81,8 @@ CREATE TABLE scubagear
 
 ```
 上述语句以hash方式给数据进行分区，则数据分到shard中的方式依然为hash
+- partition与shard的数量对应关系
+	- 最简单的策略：初始时，partition与shard在数量上是一一对应的，随着数据的更多写入，shard会自动分裂
 
 #### 分片策略
 
