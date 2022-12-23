@@ -68,29 +68,43 @@ grammar_cjkRuby: true
 ### shard/shard group管理
 
 #### 分片策略
+##### partition与shard的对应关系
+- 原生postgresql中可以定义partition分区，指数据以range/list/hash三种方式分配进哪个分区
+- postdbv4中，shard指的是数据存在哪里，也可以有上述分片方式
+- partition与shard的分片方式是一一对应的。比如
+```
+CREATE TABLE scubagear
+     (id NUMBER,
+      name VARCHAR2 (60))
+   PARTITION BY HASH (id)
+   PARTITIONS 4 
+   STORE IN (gear1, gear2, gear3, gear4);
+
+```
+上述语句以hash方式给数据进行分区，则数据分到shard中的方式依然为hash
+
 
 ##### 分片方式
+
+
 - range
-	- 优点
 		1. 基于range的分片很容易实现自动分片：只需拆分或合并分片。使用基于哈希的分片的系统实现自动分片代价很高昂
 		2. 相对于hash分片，基于range的分片在进行“范围查询”时有优势
+		3. 数据分布不均匀，基于range的分片可能会带来读取和写入热点，可以通过拆分、复制和移动分片消除这些热点。
 
-	- 缺点
-		1. 数据分布不均匀，基于range的分片可能会带来读取和写入热点，可以通过拆分、复制和移动分片消除这些热点。
-		
-- hash mod
-	- 优点
+- hash
+	- hash mod
 		1. 数据分布相对均匀
 		2. 随即读写单条数据较快
-		
-	- 缺点
-		1. 读写范围数据要跨多个分片，效率差
-		2. 分裂分片时，不好处理
-		3. 缩容/扩容时，节点变动导致全部分片/数据变动位置。
+		3. 分裂分片时，不好处理
+		4. 缩容/扩容时，节点变动导致全部分片/数据变动位置。
+		5. 查询范围数据效率低
 
-- 一致性hash
+	- 一致性hash
 
+![enter description here](./images/Screenshot_from_2022-12-23_11-17-11.png)
 
+![enter description here](./images/Screenshot_from_2022-12-23_11-17-18.png)
 
 ##### 副本位置
 - shard-group
