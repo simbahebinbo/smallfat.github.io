@@ -66,8 +66,7 @@ grammar_cjkRuby: true
 	- client driver
 
 ### shard/shard group管理
-
-#### partition与shard的对应关系
+#### partition(table) 与shard的对应关系
 - 原生postgresql中可以定义partition分区，指数据以range/list/hash三种方式分配进哪个分区。
 ```
 CREATE TABLE measurement (
@@ -89,9 +88,10 @@ create table measurement_y2006m03_pt PARTITION of measurement_y2006m03  FOR VALU
 
 - postdbv4中，shard指的是数据存在哪里。shard管理模块不需要关注复杂的partition分区方式，但是需要知道哪个表有哪些partition(partition name)
 - partition与shard的对应关系
-	- 创建partition时，shard也相应被创建
-	- 初始时，partition与shard在数量上是一一对应的
-	- 随着数据的更多写入，shard会自动分裂
+	- 创建partition(table)时，shard也相应被创建
+		- 初始时，partition与shard在数量上是一一对应的
+		- 随着数据的更多写入，shard会自动分裂
+	- partition(table)被drop时，shard也相应被回收 
 
 #### 分片策略
 
