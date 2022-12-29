@@ -97,9 +97,6 @@ create table measurement_y2006m03_pt PARTITION of measurement_y2006m03  FOR VALU
 
 ##### 分片方式
 在分片调度层面，分片方式决定了数据被存入了哪个分片。
-- 独立表：range
-- join关系： hash
-
 - range
 		1. 基于range的分片很容易实现自动分片：只需拆分或合并分片。使用基于哈希的分片的系统实现自动分片代价很高昂
 		2. 相对于hash分片，基于range的分片在进行“范围查询”时有优势
