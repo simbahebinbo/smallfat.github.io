@@ -37,7 +37,7 @@ grammar_cjkRuby: true
 - 节点选举是在pcs 节点之间进行的，pcs 节点是candidate 与 follower
 
 
-## pcs间元信息同步
+### pcs间元信息同步
 
 ![元信息同步](./attachments/1671107410817.drawio.svg)
 - pcs node之间数据同步是通过同步“PCS WAL”到replica pcs 节点完成的
@@ -68,16 +68,20 @@ grammar_cjkRuby: true
 ### shard/shard group管理
 
 #### partition与shard的对应关系
-- 原生postgresql中可以定义partition分区，指数据以range/list/hash三种方式分配进哪个分区
-- postdbv4中，shard指的是数据存在哪里，也可以有上述分片方式
-- partition与shard的分片方式是一一对应的。比如
+- 原生postgresql中可以定义partition分区，指数据以range/list/hash三种方式分配进哪个分区。
+- 原生partition的分区方式比较复杂，shard管理模块不需要关注复杂的分区方式，但是需要知道哪个表有哪些partition(partition name)
+- postdbv4中，shard指的是数据存在哪里
+- partition与shard的分片方式无关。比如
 ```
-CREATE TABLE scubagear
-     (id NUMBER,
-      name VARCHAR2 (60))
-   PARTITION BY HASH (id)
-   PARTITIONS 4 
-   STORE IN (gear1, gear2, gear3, gear4);
+CREATE TABLE measurement (
+    city_id         int not null,
+    logdate         date not null,
+    peaktemp        int,
+    unitsales       int
+) PARTITION BY RANGE (logdate);
+
+CREATE TABLE measurement_y2006m02 PARTITION OF measurement
+    FOR VALUES FROM ('2006-02-01') TO ('2006-03-01');
 
 ```
 上述语句以hash方式给数据进行分区，则数据分到shard中的方式依然为hash
@@ -146,7 +150,8 @@ CREATE TABLE scubagear
 
 - 多种策略可以选择（可指定/LB/其他）
 
-#### 创建shard
+#### shard调度
+##### 创建shard
 - 在执行create table(或类似的创建类DDL语句)时，在primary pcs上执行创建逻辑
 - 将create执行的结果保存进primary pcs meta data
 - 根据分片策略，计算shard 的 数量，range等
@@ -157,7 +162,7 @@ CREATE TABLE scubagear
 - primary pcs 通知指定node为primary shard node以及发送给它相关的shard信息()，此后关于此shard的事宜由此node负责
 
 
-#### 回收shard
+##### 回收shard
 - 在执行drop table(或类似的创建类DDL语句)时，在primary pcs上执行回收逻辑
 - 从metadata中查询目标分片的primary shard node位置
 - 发送命令给primary shard node - 回收shard
@@ -165,29 +170,36 @@ CREATE TABLE scubagear
 - pcs 清除metadata中对应shard信息(标记)
 - 同步到relica pcs中
 
-#### 分裂shard
-##### range方式
+##### 分裂shard
+###### range方式
 - 按范围切分。例如[1,1000)的分片，切分为[1,500)和[500,1000)
 - 具体切分结果，等待回复
 
 
-##### 一致性hash方式
+###### 一致性hash方式
 
 - 在hash环上新增一个节点。如下图中t4
 ![enter description here](./images/Screenshot_from_2022-12-23_11-17-48.png)
 
 
 
-##### 自动/手动分片
-- 手动分片
-	- 由用户指定分片数、分片主键(primary key)、副本数、分片范围(可选)等
-	- 在执行创建relation DDL的时候，根据上述参数，创建shard
-	- 分片合并/分裂/平移可以手动进行
-	- 缺点是数据分布不均匀。数据分布不均可能导致数据库负载不平衡，从而使其中一些节点过载，而另一些节点访问量较少。
+##### 平移分片
+- 将某分片从一个node平移到另一个node
+- 移动过程中，不影响当前正在进行的服务
 
-- 自动分片
-	- 系统在运行过程中，会根据系统节点负载情况，动态地进行分片合并/分裂/平移等操作，以应对某些节点过载过热等情况
-	- 最终目标是形成一个弹性伸缩的分片集群
+##### Failover
+集群在服务过程中，一个服务节点(计算结点或者存储节点，或者同时)发生了crash。 为了提升cluster的可用性，pcs需要进行failover处理
+
+###### 计算结点crash
+- 重新计算原属于该节点的primary shard node
+- 需要先从元信息取得primary shard node在该节点上的shard
+- 计算新的primary shard node完成后，更新元信息，并通知新节点相关shard元信息
+
+###### 存储节点crash
+- 重新计算原副本位置在此节点上的shard的副本位置
+- 需要先从元信息取得原副本位置在该节点上的shard
+- 计算新的副本位置完成后，更新元信息，并通知primary shard node同步shard数据
+
 
 ## cluster node状态管理
 - primary pcs利用心跳机制定时收集cluster内各node的状态，包括：
