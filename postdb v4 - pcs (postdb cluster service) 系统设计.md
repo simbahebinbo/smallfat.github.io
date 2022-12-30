@@ -58,6 +58,8 @@ grammar_cjkRuby: true
 - system table (include partition/table/... 结构元数据)
 - shard
 
+- 问题：
+1. system table是否应该作为pcs的元信息？ pcs是以extension的方式存在，在pcs内进行create table操作，相应的系统表元数据都在pcs进程内存空间内，那计算
 
 ### 元信息的读写场景
 - 写(只能在primary pcs上)
@@ -96,7 +98,8 @@ create table measurement_y2006m03_pt PARTITION of measurement_y2006m03  FOR VALU
 	- 创建partition(table)时，shard也相应被创建
 		- 初始时，partition与shard在数量上是一一对应的
 		- 随着数据的更多写入，shard会自动分裂
-	- partition(table)被drop时，shard也相应被回收 
+	- partition(table)被drop时，shard也相应被回收: v3
+	- detach
 
 
 ## shard调度管理
@@ -152,27 +155,29 @@ create table measurement_y2006m03_pt PARTITION of measurement_y2006m03  FOR VALU
 #### primary shard node 选择策略
 - 选项：
 	0. 指定固定节点
-	1. 在计算结点间轮转选择，每个节点机会平等；在候选人节点中若存在对应副本节点，优先选择副本节点。
+	1. 在计算结点间轮转选择，每个节点机会平等；在候选人节点中若存在对应副本节点，优先选择副本节点。（同样要考虑 shard group 因素）
 		- - 理论上，我们可以选择所有计算结点中任何一个。实际上，在本地分布式架构下，计算结点与存储节点物理上相同，这里可以为了优化网络流量，尽量选择与副本在同一个物理机器上的计算结点（因primary shard node负责产生shard wal）
 
 ### 创建shard
-- 在执行create table(或类似的创建类DDL语句)时，在primary pcs上执行创建逻辑
-- 将create执行的结果保存进primary pcs meta data
+*- 在执行create table(或类似的创建类DDL语句)时，在primary pcs上执行创建逻辑
+- 将create执行的结果保存进primary pcs meta data*
 - 根据分片策略，计算shard 的 数量，range等
 - 根据分片策略，计算shard 所在的 nodes（存储节点） ，并选择primary shard node（计算结点）
-- 将上述信息写入primary pcs的metadata，并同步PCS WAL到replica pcs
-- replica pcs持久化并回放PCS WAL
+*- 将上述信息写入primary pcs的metadata，并同步PCS WAL到replica pcs*
+*- replica pcs持久化并回放PCS WAL*
 - 若Quorum成功
-- primary pcs 通知指定node为primary shard node以及发送给它相关的shard信息()，此后关于此shard的事宜由此node负责
+- primary pcs 通知指定node为primary shard node以及*发送给它相关的shard信息(*)，此后关于此shard的事宜由此node负责
 
 
 ### 回收shard
-- 在执行drop table(或类似的创建类DDL语句)时，在primary pcs上执行回收逻辑
+*- 在执行drop table(或类似的创建类DDL语句)时，在primary pcs上执行回收逻辑
 - 从metadata中查询目标分片的primary shard node位置
 - 发送命令给primary shard node - 回收shard
 - primary shard node执行命令成功
 - pcs 清除metadata中对应shard信息(标记)
-- 同步到relica pcs中
+- 同步到relica pcs中*
+
+- 提供一个api，清除自身相应元信息缓存
 
 ### 分裂shard
 - 建议使用一致性hash作为shard分裂的方式。
@@ -184,7 +189,7 @@ create table measurement_y2006m03_pt PARTITION of measurement_y2006m03  FOR VALU
 
 ### 平移分片
 - 将某分片从一个node平移到另一个node
-- 移动过程中，不影响当前正在进行的服务
+- 移动过程中，不影响当前正在进行的服务（热切换）
 
 ### Failover
 集群在服务过程中，一个服务节点(计算结点或者存储节点，或者同时)发生了crash。 为了提升cluster的可用性，pcs需要进行failover处理
