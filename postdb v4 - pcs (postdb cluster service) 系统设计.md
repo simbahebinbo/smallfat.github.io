@@ -43,14 +43,172 @@ grammar_cjkRuby: true
 
 ### pcs间元信息同步
 
+![绘图](./attachments/1672376861618.drawio.svg)
+
+- pcs node之间数据同步是通过同步“PCS WAL”到replica pcs 节点完成的
+	1. primary pcs节点接收到write请求，写入MetaData Buffer
+	2. primary pcs节点生成PCS WAL
+	3. PCS WAL同步到replica pcs节点
+	4. replica pcs节点收到PCS WAL后，进行持久化并replay WAL，数据写入Buffer	
+
 
 ## 元信息管理
+### 元信息类别
+- 配置信息
+- system table (include partition/table/... 结构元数据)
+- shard
+
+
+### 元信息的读写场景
+- 写(只能在primary pcs上)
+	- create table(...) - 创建分片
+	- drop table(...) - 回收分片
+	- 平移分片(主动/被动)
+	- 分裂分片(主动/被动)
+
+- 读(任一个node上(包括pcs meta data learner节点))
+	- select
+	- insert/update
+	- client driver
+
+### partition(table) 与shard的对应关系
+- 原生postgresql中可以定义partition分区，指数据以range/list/hash三种方式分配进哪个分区。
+```
+CREATE TABLE measurement (
+    city_id         int not null,
+    logdate         date not null,
+    peaktemp        int,
+    unitsales       int
+) PARTITION BY RANGE (logdate);
+
+CREATE TABLE measurement_y2006m02 PARTITION OF measurement
+    FOR VALUES FROM ('2006-02-01') TO ('2006-03-01');
+	
+CREATE TABLE measurement_y2006m03 PARTITION OF measurement
+    FOR VALUES FROM ('2006-03-01') TO ('2006-06-01') partition by range(peaktemp);
+	
+create table measurement_y2006m03_pt PARTITION of measurement_y2006m03  FOR VALUES FROM (1) to (10);	
+
+```
+
+- postdbv4中，shard指的是数据存在哪里。shard管理模块不需要关注复杂的partition分区方式，但是需要知道哪个表有哪些partition(partition name)
+- partition与shard的对应关系
+	- 创建partition(table)时，shard也相应被创建
+		- 初始时，partition与shard在数量上是一一对应的
+		- 随着数据的更多写入，shard会自动分裂
+	- partition(table)被drop时，shard也相应被回收 
 
 
 ## shard调度管理
+### shard分片策略
 
-## 配置下发
+#### 分片方式
+在分片调度层面，分片方式决定了数据被存入了哪个分片。
+- range
+		1. 基于range的分片很容易实现自动分片：只需拆分或合并分片。使用基于哈希的分片的系统实现自动分片代价很高昂
+		2. 相对于hash分片，基于range的分片在进行“范围查询”时有优势
+		3. 数据分布不均匀，基于range的分片可能会带来读取和写入热点，可以通过拆分、复制和移动分片消除这些热点。
+
+- hash
+	- hash mod
+		1. 数据分布相对均匀
+		2. 随即读写单条数据较快
+		3. 分裂分片时，不好处理
+		4. 缩容/扩容时，节点变动导致全部分片/数据变动位置。
+		5. 查询范围数据效率低
+
+	- 一致性hash
+		1. 数据分布相对均匀
+		2. 随即读写单条数据较快
+		3. 能较好兼容分裂/缩容/扩容
+		4. 查询范围数据效率低
+
+![enter description here](./images/Screenshot_from_2022-12-23_11-17-11.png)
+
+![enter description here](./images/Screenshot_from_2022-12-23_11-17-18.png)
+
+#### 副本位置策略
+- shard-group
+	- 由用户设置表-表之间的亲和性，在计算下推时使用
+	- 针对shard，可能形成n*n的绑定关系？
+	
+- 负载均衡策略	
+	- 排除哪些节点
+		- 硬盘空闲空间 < 某个设置值
+		- 当前cpu使用率 > 某个设置值 
+		
+	- 再考虑shard-group因素：寻找符合shard-group条件的节点(表表关系)
+	- 最后使用round robin方法在可用节点上进行选择
+		- 可从最简单的策略开始做，后面持续优化
+
+- 灾备策略
+	- 主要以存储节点的地理位置为考虑因素，实现灾难备份，如两地三中心，三地五中心等
+	- 在存储节点安装时，已经设定地理位置(城市/中心)。此后，系统运行，此信息上报给pcs
+	- 给分片副本分配节点时，按中心位置进行分配
+
+
+- 先应用灾备策略，再考虑负载均衡策略
+
+#### primary shard node 选择策略
+- 理论上，我们可以选择所有计算结点中任何一个
+- 实际上，在本地分布式架构下，计算结点与存储节点物理上相同，这里可以为了优化网络流量，尽量选择与副本在同一个物理机器上的计算结点（因primary shard node负责产生shard wal）
+- 选择原则：
+	1. 在计算结点间轮转选择，每个节点机会平等
+	2. 在候选人节点中若存在对应副本节点，优先选择副本节点
+
+- 多种策略可以选择（可指定/LB/其他）
+
+### 创建shard
+- 在执行create table(或类似的创建类DDL语句)时，在primary pcs上执行创建逻辑
+- 将create执行的结果保存进primary pcs meta data
+- 根据分片策略，计算shard 的 数量，range等
+- 根据分片策略，计算shard 所在的 nodes（存储节点） ，并选择primary shard node（计算结点）
+- 将上述信息写入primary pcs的metadata，并同步PCS WAL到replica pcs
+- replica pcs持久化并回放PCS WAL
+- 若Quorum成功
+- primary pcs 通知指定node为primary shard node以及发送给它相关的shard信息()，此后关于此shard的事宜由此node负责
+
+
+### 回收shard
+- 在执行drop table(或类似的创建类DDL语句)时，在primary pcs上执行回收逻辑
+- 从metadata中查询目标分片的primary shard node位置
+- 发送命令给primary shard node - 回收shard
+- primary shard node执行命令成功
+- pcs 清除metadata中对应shard信息(标记)
+- 同步到relica pcs中
+
+### 分裂shard
+- 建议使用一致性hash作为shard分裂的方式。
+
+- 在hash环上新增一个节点。如下图中t4
+![enter description here](./images/Screenshot_from_2022-12-23_11-17-48.png)
+
+
+
+### 平移分片
+- 将某分片从一个node平移到另一个node
+- 移动过程中，不影响当前正在进行的服务
+
+### Failover
+集群在服务过程中，一个服务节点(计算结点或者存储节点，或者同时)发生了crash。 为了提升cluster的可用性，pcs需要进行failover处理
+
+#### 计算结点crash
+- 重新计算原属于该节点的primary shard node
+- 需要先从元信息取得primary shard node在该节点上的shard
+- 计算新的primary shard node完成后，更新元信息，并通知新节点相关shard元信息
+
+#### 存储节点crash
+- 重新计算原副本位置在此节点上的shard的副本位置
+- 需要先从元信息取得原副本位置在该节点上的shard
+- 计算新的副本位置完成后，更新元信息，并通知primary shard node同步shard数据
 
 ## 控制命令下发
+- 日志命令
+- tracing
+- 监控
 
 ## cluster node状态管理
+- primary pcs利用心跳机制定时收集cluster内各node的状态，包括：
+	- 在线情况
+	- 其他业务指标(地理位置，shard数，shard总占用资源，io负载，cpu负载，memory占用，硬盘空闲容量等)
+- 此状态信息保存在内存cache中，无需持久化，无需被复制到replica pcs: 切换primary pcs场景下，新的primary pcs会重新收集最新cluster node最新状态信息
