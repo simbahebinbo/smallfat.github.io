@@ -27,9 +27,22 @@ grammar_cjkRuby: true
 
 # 功能模块
 
-
-
 ## PCS group
+
+![绘图](./attachments/1672372540325.drawio.svg)
+- 整个cluster中，pcs 用来控制整个cluster的状态变化。使用pcs group来保证pcs node的可用性
+- pcs group之间采用与Raft类似的协议，选举primary pcs节点，并在pcs之间同步元信息
+
+
+### pcs 选举
+- pcs 节点在进行选举时，状态迁移如下图所示：
+
+![enter description here](./images/Screenshot_from_2022-12-07_09-43-40.png)
+- 节点选举是在pcs 节点之间进行的，pcs 节点是candidate 与 follower
+
+
+### pcs间元信息同步
+
 
 ## 元信息管理
 
