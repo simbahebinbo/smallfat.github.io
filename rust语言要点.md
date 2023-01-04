@@ -43,8 +43,23 @@ fn main() {
 
 ![literal](./images/Screenshot_from_2022-11-23_11-14-48.png)
 ## 枚举 (enum)
+
+
+
 ## 哈希 (hash)
+
+
+
 ## 结构 (struct)
+
+```
+struct Point {
+    x: f32,
+    y: f32,
+}
+```
+
+
 ## 元组 (tuple)
 -  group together a number of values with a variety of types into one ***compound type***
 -  fixed length: once declared, they cannot grow or shrink in size
@@ -308,6 +323,13 @@ fn main() {
 ```
 
 # 函数
+## async function
+```
+async fn regular_example() { }
+```
+
+
+
 ## 闭包
 
 # 内存管理
