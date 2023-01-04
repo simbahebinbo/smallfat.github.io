@@ -6,9 +6,7 @@ grammar_cjkRuby: true
 # 背景与目标
 - pcs是postdb数据库下的一个模块
 - pcs需要收集postdb cluster中所有node的在线状态(通过网络层)
-- pcs需要在创建table/index/partition等relation时，创建对应的分片(shard)，并根据策略进行配置(副本策略，primary shard node策略)
-- pcs需要在drop table/index/partition等relation时，回收对应的分片(shard)
-- pcs需要在alter table/index/partition等relation时，处理对应的分片(shard)
+- 在创建table/index/partition等relation,创建对应的分片(shard)时，pcs需要提供对应的策略接口(副本策略，primary shard node选择策略)
 - pcs需要应对失效的cluster node(计算节点/存储节点)，进行failover处理
 - pcs需要应对shard 容量膨胀情况，进行自动分裂
 - pcs需要应对shard 写过热问题，进行自动分裂/平移
@@ -20,12 +18,39 @@ grammar_cjkRuby: true
 ![enter description here](./images/postdbv4-arch.png)
 
 
-# 状态迁移
-
-![绘图](./attachments/1672372460895.drawio.svg)
 
 
-# 功能模块
+# 功能
+## 模块划分
+
+PCS组件主要存在存在下述需求点：
+- 收集cluster中各node的status信息
+- 为创建shard提供相关策略支持
+- 主动(被动)调度shard：扩容、缩容、平移、分裂等
+- 维持PCS组件在cluster中的高可用性，相对应的，PCS之间组成PCS group
+- 下发系统命令到指定node
+
+相对应的，PCS由以下模块组成：
+- 集群状态 Cluster Status
+- 策略控制 Policy Control
+- 分片调度 Shard Schedule
+- PCS 组控制 PCS Group Control
+- 命令中心 Command Center
+
+![PCS功能模块](./attachments/1672728973669.drawio.svg)
+
+
+## 模块
+### 集群状态 (cluster status)
+
+### 策略控制 (policy control)
+
+### 分片调度 (shade schedule)
+
+### PCS组控制 (PCS group control)
+
+### 命令中心 (command center)
+
 
 ## PCS group
 
@@ -214,3 +239,7 @@ create table measurement_y2006m03_pt PARTITION of measurement_y2006m03  FOR VALU
 	- 在线情况
 	- 其他业务指标(地理位置，shard数，shard总占用资源，io负载，cpu负载，memory占用，硬盘空闲容量等)
 - 此状态信息保存在内存cache中，无需持久化，无需被复制到replica pcs: 切换primary pcs场景下，新的primary pcs会重新收集最新cluster node最新状态信息
+
+# 状态迁移
+
+![绘图](./attachments/1672372460895.drawio.svg)
