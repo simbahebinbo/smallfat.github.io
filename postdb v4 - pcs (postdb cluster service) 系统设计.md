@@ -52,7 +52,7 @@ PCS组件主要存在存在下述需求点：
 	- 硬盘空闲容量
 	
 	
-- node在本地收集status信息，通过心跳机制，将status信息报告给primary pcs所在node的coordinator组件；然后coordinator组件会转发给本模块
+- node在本地收集status信息，通过心跳机制，将status信息报告给pcs所在node的coordinator组件；然后coordinator组件会转发给本模块
 - 此信息保存在内存cache中，无需持久化，无需被复制到replica PCS
 	- 切换primary pcs场景下，新的primary pcs会重新收集最新cluster node最新状态信息
 
@@ -72,7 +72,35 @@ PCS组件主要存在存在下述需求点：
 
 ### 策略控制 (policy control)
 #### 业务逻辑
-- 
+目前，需要提供两类策略，供外界模块调用: 副本位置策略；  primary shard node 选择策略。
+
+##### 副本位置策略
+- shard-group
+	- 由用户设置表-表之间的亲和性，在计算下推时使用
+
+	
+- 负载均衡策略	
+	- 排除哪些节点
+		- 硬盘空闲空间 < 某个设置值
+		- 当前cpu使用率 > 某个设置值 
+		
+	- 再考虑shard-group因素：寻找符合shard-group条件的节点(表表关系)
+	- 最后使用round robin方法在可用节点上进行选择
+		- 可从最简单的策略开始做，后面持续优化
+
+- 灾备策略
+	- 主要以存储节点的地理位置为考虑因素，实现灾难备份，如两地三中心，三地五中心等
+	- 在存储节点安装时，已经设定地理位置(城市/中心)。此后，系统运行，此信息上报给pcs
+	- 给分片副本分配节点时，按中心位置进行分配
+
+
+- 先应用灾备策略，再考虑负载均衡策略
+
+##### primary shard node 选择策略
+- 选项：
+	0. 指定固定节点
+	1. 在计算结点间轮转选择，每个节点机会平等；在候选人节点中若存在对应副本节点，优先选择副本节点。（同样要考虑 shard group 因素）
+		- - 理论上，我们可以选择所有计算结点中任何一个。实际上，在本地分布式架构下，计算结点与存储节点物理上相同，这里可以为了优化网络流量，尽量选择与副本在同一个物理机器上的计算结点（因primary shard node负责产生shard wal）
 
 #### 模块接口
 
@@ -189,33 +217,7 @@ create table measurement_y2006m03_pt PARTITION of measurement_y2006m03  FOR VALU
 
 ![enter description here](./images/Screenshot_from_2022-12-23_11-17-18.png)
 
-#### 副本位置策略
-- shard-group
-	- 由用户设置表-表之间的亲和性，在计算下推时使用
-	- 针对shard，可能形成n*n的绑定关系？
-	
-- 负载均衡策略	
-	- 排除哪些节点
-		- 硬盘空闲空间 < 某个设置值
-		- 当前cpu使用率 > 某个设置值 
-		
-	- 再考虑shard-group因素：寻找符合shard-group条件的节点(表表关系)
-	- 最后使用round robin方法在可用节点上进行选择
-		- 可从最简单的策略开始做，后面持续优化
 
-- 灾备策略
-	- 主要以存储节点的地理位置为考虑因素，实现灾难备份，如两地三中心，三地五中心等
-	- 在存储节点安装时，已经设定地理位置(城市/中心)。此后，系统运行，此信息上报给pcs
-	- 给分片副本分配节点时，按中心位置进行分配
-
-
-- 先应用灾备策略，再考虑负载均衡策略
-
-#### primary shard node 选择策略
-- 选项：
-	0. 指定固定节点
-	1. 在计算结点间轮转选择，每个节点机会平等；在候选人节点中若存在对应副本节点，优先选择副本节点。（同样要考虑 shard group 因素）
-		- - 理论上，我们可以选择所有计算结点中任何一个。实际上，在本地分布式架构下，计算结点与存储节点物理上相同，这里可以为了优化网络流量，尽量选择与副本在同一个物理机器上的计算结点（因primary shard node负责产生shard wal）
 
 ### 创建shard
 *- 在执行create table(或类似的创建类DDL语句)时，在primary pcs上执行创建逻辑
@@ -268,11 +270,6 @@ create table measurement_y2006m03_pt PARTITION of measurement_y2006m03  FOR VALU
 - tracing
 - 监控
 
-## cluster node状态管理
-- primary pcs利用心跳机制定时收集cluster内各node的状态，包括：
-	- 在线情况
-	- 其他业务指标(地理位置，shard数，shard总占用资源，io负载，cpu负载，memory占用，硬盘空闲容量等)
-- 此状态信息保存在内存cache中，无需持久化，无需被复制到replica pcs: 切换primary pcs场景下，新的primary pcs会重新收集最新cluster node最新状态信息
 
 # 状态迁移
 
