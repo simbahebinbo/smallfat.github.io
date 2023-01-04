@@ -323,6 +323,12 @@ fn main() {
 ```
 
 # 函数
+## normal function
+
+```
+
+```
+
 ## async function
 ```
 async fn regular_example() { }
