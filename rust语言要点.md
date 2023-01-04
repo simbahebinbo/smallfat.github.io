@@ -326,7 +326,9 @@ fn main() {
 ## normal function
 
 ```
-
+fn plus_one(x: i32) -> i32 {
+    x + 1;
+}
 ```
 
 ## async function
