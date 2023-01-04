@@ -42,31 +42,57 @@ PCS组件主要存在存在下述需求点：
 
 ## 模块
 ### 集群状态 (cluster status)
+#### 业务逻辑
+- PCS收集整个集群内所有node的下列状态(暂定，实现时依据其他模块需求增减)
+	- 在线(online)情况
+	- 地理位置
+	- io负载
+	- cpu负载
+	- memory占用
+	- 硬盘空闲容量
+	
+	
+- node在本地收集status信息，通过心跳机制，将status信息报告给primary pcs所在node的coordinator组件；然后coordinator组件会转发给本模块
+- 此信息保存在内存cache中，无需持久化，无需被复制到replica PCS
+	- 切换primary pcs场景下，新的primary pcs会重新收集最新cluster node最新状态信息
+
+#### 模块接口
+
+1. 更新node status
+```
+	fn update_nodes_status(s: &node_status) -> boolean;
+```
+
+2.  取得最新node status
+
+```
+	fn get_nodes_status() -> node_status;
+```
+
 
 ### 策略控制 (policy control)
+
+
 
 ### 分片调度 (shade schedule)
 
 ### PCS组控制 (PCS group control)
 
-### 命令中心 (command center)
-
-
-## PCS group
+#### 基本形态
 
 ![绘图](./attachments/1672372540325.drawio.svg)
 - 整个cluster中，pcs 用来控制整个cluster的状态变化。使用pcs group来保证pcs node的可用性
 - pcs group之间采用与Raft类似的协议，选举primary pcs节点，并在pcs之间同步元信息
 
 
-### pcs 选举
+#### pcs 选举
 - pcs 节点在进行选举时，状态迁移如下图所示：
 
 ![enter description here](./images/Screenshot_from_2022-12-07_09-43-40.png)
 - 节点选举是在pcs 节点之间进行的，pcs 节点是candidate 与 follower
 
 
-### pcs间元信息同步
+#### pcs间元信息同步
 
 ![绘图](./attachments/1672376861618.drawio.svg)
 
@@ -75,6 +101,11 @@ PCS组件主要存在存在下述需求点：
 	2. primary pcs节点生成PCS WAL
 	3. PCS WAL同步到replica pcs节点
 	4. replica pcs节点收到PCS WAL后，进行持久化并replay WAL，数据写入Buffer	
+
+### 命令中心 (command center)
+
+
+
 
 
 ## 元信息管理
