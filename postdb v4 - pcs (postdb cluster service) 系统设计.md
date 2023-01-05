@@ -87,12 +87,12 @@ PCS组件主要存在存在下述需求点：
 		- 直接返回设置中指定的计算节点
 	
 - 策略2：负载均衡
-	1. 用户在系统设置中设置了shard-group，绑定了表-表的亲和性关系
+	1. 用户可以在系统设置中设置shard-group，绑定了表-表的亲和性关系
 	2. 搜索shard-group关系元数据，找出与当前shard所在的表的shard-group
 	3. 计算候选节点集合
 		- 若上述shard-group不存在，则候选节点集合为所有正常节点。
-		- 若上述shard-group存在，但group中的分片已分配了primary shard node，且(num of primary-shard-nodes) = (副本数)，则直接返回该group中已经分配的primary shard nodes
-		- 若上述shard-group存在，且(num of primary-shard-nodes) < (副本数)，则候选节点集合为(所有正常节点 - 已分配的primary-shard-nodes)
+		- 若上述shard-group存在，但group中的分片已分配了primary shard node，且(num of primary-shard-nodes) = (副本配置数)，则直接返回该group中已经分配的primary shard nodes
+		- 若上述shard-group存在，且(num of primary-shard-nodes) < (副本配置数)，则候选节点集合为(所有正常节点 - 已分配的primary-shard-nodes)
 	4. 从候选节点集合中，选择目标primary shard node
 		- 原则：按照计算节点的primary shard node频率进行轮转，每个节点机会平等
 
@@ -107,13 +107,34 @@ PCS组件主要存在存在下述需求点：
 		- 在安装配置时，需要检查设置中副本数与当前地区的匹配条件：副本数 >= 地区数，否则达不到每个地区至少有一个副本，无法保证灾备可靠性
 		- 执行策略时，按照先选择地区后选择中心的顺序，进行副本分配
 			1. 列出各地区各中心的所有节点
-			2. 排除异常节点，得出候选节点集合
-				- 不在线
+			2. 排除异常节点，得出正常节点集合N
+				- 长时间不在线(连续不在线时间 > 临界值)
 				- 硬盘(postdb数据目录所在分区)空闲空间 < 临界值				
-			3. shard-group：
+			3. 搜索shard-group关系元数据，找出与当前shard所在的表的shard-group
+			4. 计算候选节点集合C
+				- 若上述shard-group不存在，则候选节点集合为正常节点集合N。
+				- 若上述shard-group存在，但group中的分片已分配了副本节点，且(num of 已分配副本节点) = (副本配置数)
+					- 若 已经分配的所有副本节点都在正常节点集合N中， 则返回已经分配的所有副本节点
+					- 若 已经分配的所有副本节点中有异常节点， 则需要先把该异常节点上的该shard-group中数据转移到正常节点上，再执行上一步
+						- 把该异常节点上的该shard-group中数据转移到正常节点上
+							1. 针对primary shard node在该异常节点上的shard(属于shard-group的)，重新选择primary shard node; 
+							2. 针对该异常节点上的shard(属于shard-group的)，通知对应的primary shard node，进行副本平移操作; 
+							3. 若所有primary shard node回复平移成功，则此操作成功；
+							4. 若存在失败的回复，则一直持续进行相应shard副本的平移，直到所有shard平移成功
+				- 若上述shard-group存在，且(num of 已分配副本节点) < (副本配置数)
+					- 若 已经分配的所有副本节点都在正常节点集合N中， 则候选节点集合为(正常节点集合N - 已分配副本节点)
+					- 若 已经分配的所有副本节点中有异常节点， 则需要先把该异常节点上的该shard-group中数据转移到正常节点上，再执行上一步
+						- 把该异常节点上的该shard-group中数据转移到正常节点上
+							1. 针对primary shard node在该异常节点上的shard(属于shard-group的)，重新选择primary shard node; 
+							2. 针对该异常节点上的shard(属于shard-group的)，通知对应的primary shard node，进行副本平移操作; 
+							3. 若所有primary shard node回复平移成功，则此操作成功；
+							4. 若存在失败的回复，则一直持续进行相应shard副本的平移，直到所有shard平移成功
+			5. 按照先选择地区后选择中心的顺序，进行副本分配
+				1. 选择一个地区，找到候选节点集合C中属于该地区的所有节点
+				2. 
 
 - 策略2：负载均衡
-	- 排除哪些节点
+	- 排除异常节点
 		- 硬盘空闲空间 < 某个设置值
 		- 当前cpu使用率 > 某个设置值 
 
