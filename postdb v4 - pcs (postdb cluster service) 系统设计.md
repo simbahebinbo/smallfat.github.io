@@ -87,11 +87,14 @@ PCS组件主要存在存在下述需求点：
 		- 直接返回设置中指定的计算节点
 	
 - 策略2：负载均衡
-
-	1. 用户
-	
-	1. 在计算结点间轮转选择，每个节点机会平等；在候选人节点中若存在对应副本节点，优先选择副本节点。（同样要考虑 shard group 因素）
-		- - 理论上，我们可以选择所有计算  结点中任何一个。实际上，在本地分布式架构下，计算结点与存储节点物理上相同，这里可以为了优化网络流量，尽量选择与副本在同一个物理机器上的计算结点（因primary shard node负责产生shard wal）
+	1. 用户在系统设置中设置了shard-group，绑定了表-表的亲和性关系
+	2. 搜索shard-group关系元数据，找出与当前shard所在的表的shard-group
+	3. 计算候选节点集合
+		- 若上述shard-group不存在，则候选节点集合为所有正常节点。
+		- 若上述shard-group存在，但group中的分片已分配了primary shard node，且(num of primary-shard-nodes) = (副本数)，则直接返回该group中已经分配的primary shard nodes
+		- 若上述shard-group存在，且(num of primary-shard-nodes) < (副本数)，则候选节点集合为(所有正常节点 - 已分配的primary-shard-nodes)
+	4. 从候选节点集合中，选择目标primary shard node
+		- 原则：按照计算节点的primary shard node频率进行轮转，每个节点机会平等
 
 ##### 策略 - 副本位置
 - 用户可以在配置中设置系统使用哪种策略：1. 灾备策略； 2. 负载均衡策略
