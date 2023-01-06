@@ -192,11 +192,16 @@ PCS组件主要存在存在下述需求点：
 
 2. 向primary shard node请求移动分片数据
 ```
+	req: (shade_id, source_node, dest_node)
+		 
 	
+	response: (boolean)
 ```
 
 
 #### 分裂
+
+
 
 
 ### PCS组控制 (PCS group control)
