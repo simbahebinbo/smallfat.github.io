@@ -75,7 +75,7 @@ PCS组件主要存在存在下述需求点：
 ### 策略控制 (policy control)
 #### 业务逻辑
 
-##### 流程
+##### 序列图
 
 ![副本位置选择流程](./attachments/1672890309895.drawio.svg)
 
@@ -174,6 +174,20 @@ PCS组件主要存在存在下述需求点：
 
 ### 分片调度 (shade schedule)
 
+#### 平移shade副本
+##### 业务逻辑
+- 一个shade，其信息保存在系统元信息表内。
+- shade有可能属于某个datagroup，也有可能是独立的。
+- 平移属于某个datagroup内的shade，需要将整个datagroup一起移动。这是个原子操作。
+- 如果primary shard node回复 平移datagroup内的某个shade 失败，则应该重选副本位置，再次尝试，直到成功
+
+
+![绘图](./attachments/1672969880164.drawio.svg)
+##### 接口
+
+
+
+#### 分裂
 
 
 ### PCS组控制 (PCS group control)
