@@ -19,7 +19,6 @@ grammar_cjkRuby: true
 
 
 
-# 模块封装
 
 
 # 功能
@@ -31,6 +30,7 @@ PCS组件主要存在存在下述需求点：
 - 主动(被动)调度shard：扩容、缩容、平移、分裂等
 - 维持PCS组件在cluster中的高可用性，相对应的，PCS之间组成PCS group
 - 下发系统命令到指定node
+- 维护系统配置信息，保证整个配置存在中心控制，并可下发到各node
 
 相对应的，PCS由以下模块组成：
 - 集群状态 Cluster Status
@@ -38,9 +38,17 @@ PCS组件主要存在存在下述需求点：
 - 分片调度 Shard Schedule
 - PCS 组控制 PCS Group Control
 - 命令中心 Command Center
+- 配置中心 Configuration Center
 
 ![PCS功能模块](./attachments/1672728973669.drawio.svg)
 
+
+## 组件形态
+- Policy Control 模块要被UserSession调用
+- 其他模块运行在Extension内
+
+
+![绘图](./attachments/1672974652093.drawio.svg)
 
 ## 模块
 ### 集群状态 (cluster status)
@@ -80,7 +88,7 @@ PCS组件主要存在存在下述需求点：
 ![副本位置选择流程](./attachments/1672890309895.drawio.svg)
 
 
-##### 策略 - 选择primary shard node
+##### 策略 - 选择shard的primary shard node
 - 策略1： 指定固定节点
 	- 思路：
 		- 用户在系统设置中指定某个计算节点(node ID)为primary shard node
@@ -92,9 +100,9 @@ PCS组件主要存在存在下述需求点：
 	1. 用户可以在系统设置中设置shard-group，绑定了表-表的亲和性关系
 	2. 搜索shard-group关系元数据，找出与当前shard所在的表的shard-group
 	3. 计算候选节点集合
-		- 若上述shard-group不存在，则候选节点集合为所有正常节点。
+		- 若上述shard-group不存在，则候选节点集合C为所有正常节点。
 		- 若上述shard-group存在，但group中的分片已分配了primary shard node，且(num of primary-shard-nodes) = (副本配置数)，则直接返回该group中已经分配的primary shard nodes
-		- 若上述shard-group存在，且(num of primary-shard-nodes) < (副本配置数)，则候选节点集合为(所有正常节点 - 已分配的primary-shard-nodes)
+		- 若上述shard-group存在，且(num of primary-shard-nodes) < (副本配置数)，则候选节点集合C为(所有正常节点集合 - 已分配的primary-shard-nodes)
 	4. 从候选节点集合中，选择目标primary shard node
 		- 原则：按照计算节点的primary shard node频率进行轮转，每个节点机会平等
 
@@ -169,8 +177,16 @@ PCS组件主要存在存在下述需求点：
 #### 模块接口
 
 1. 选择primary shard node
+```
+	fn compute_primary_shard_node(shade_id: Shade_ID) -> (node_id: Node_ID);
+```
+
 
 2. 选择副本位置
+```
+	fn compute_replica_shard_nodes(shade_id: Shade_ID) -> (node_ids: Vec<Node_ID>);
+```
+
 
 ### 分片调度 (shade schedule)
 
@@ -200,6 +216,14 @@ PCS组件主要存在存在下述需求点：
 
 
 #### 分裂
+- 当shade容量达到临界值时，需要做分裂操作
+- 目前的问题：从架构上看，分裂操作，由哪个组件驱动？ 存储层? PCS? Primary Shade Node?
+- 若由PCS驱动，应该要涉及分裂算法。
+	- 建议使用一致性hash作为shard分裂的方式。
+	- 在hash环上新增一个节点。如下图中t4
+	
+![enter description here](./images/Screenshot_from_2022-12-23_11-17-48.png)
+
 
 
 
@@ -231,10 +255,6 @@ PCS组件主要存在存在下述需求点：
 	4. replica pcs节点收到PCS WAL后，进行持久化并replay WAL，数据写入Buffer	
 
 ### 命令中心 (command center)
-
-
-
-
 
 ## 元信息管理
 ### 元信息类别
