@@ -182,9 +182,18 @@ PCS组件主要存在存在下述需求点：
 - 如果primary shard node回复 平移datagroup内的某个shade 失败，则应该重选副本位置，再次尝试，直到成功
 
 
+
 ![绘图](./attachments/1672969880164.drawio.svg)
 ##### 接口
+1. 平移shade
+```
+	fn move_shade(shade_id: Shade_Id) -> boolean;
+```
 
+2. 向primary shard node请求移动分片数据
+```
+	
+```
 
 
 #### 分裂
