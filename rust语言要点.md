@@ -336,7 +336,37 @@ fn plus_one(x: i32) -> i32 {
 async fn regular_example() { }
 ```
 
+## 关联函数(associate functions)
+关联函数是指第一个参数不是self(的各种形式)但和Struct有关联关系的函数。关联方法类似于其他语言中类方法或静态方法的概念。
 
+调用关联方法的语法StructName::func()。例如，String::from()就是在调用String的关联方法from()。
+
+```
+struct Rectangle {
+  width: u32,
+  height: u32,
+}
+
+impl Rectangle {
+  // 关联方法new：构造Rectangle的实例对象
+  fn new(width: u32, height: u32) -> Rectangle {
+    Rectangle { width, height }
+  }
+}
+
+impl Rectangle {
+  fn area(&self) -> u32 { self.width * self.height }
+}
+
+fn main() {
+  // 调用关联方法
+  let rect1 = Rectangle::new(30, 50);
+  let rect2 = Rectangle::new(20, 50);
+  println!("{}", rect1.area());
+  println!("{}", rect2.area());
+}
+
+```
 
 ## 闭包
 
@@ -391,3 +421,85 @@ Mutability of data can be changed when ownership is transferred.
 - 模块：
 	- 是箱内的代码组织单位（或为嵌套形式）。
 	- 可以具有跨其他模块的递归定义。
+	
+# 特征 trait	
+特征定义了一个可以被共享的行为，只要实现了特征，你就能使用该行为。
+
+```
+#![allow(unused)]
+fn main() {
+pub trait Summary {
+    fn summarize(&self) -> String;
+}
+}
+```
+
+# 泛型 Generics
+## where关键字
+- 当分别指定泛型的类型和约束会更清晰时：
+
+```
+impl <A: TraitB + TraitC, D: TraitE + TraitF> MyTrait<A, D> for YourType {}
+
+// 使用 `where` 从句来表达约束
+impl <A, D> MyTrait<A, D> for YourType where
+    A: TraitB + TraitC,
+    D: TraitE + TraitF {}
+
+```
+- 当使用 where 从句比正常语法更有表现力时。本例中的 impl 如果不用 where 从句，就无法直接表达。
+```
+use std::fmt::Debug;
+
+trait PrintInOption {
+    fn print_in_option(self);
+}
+
+// 这里需要一个 `where` 从句，否则就要表达成 `T: Debug`（这样意思就变了），
+// 或者改用另一种间接的方法。
+impl<T> PrintInOption for T where
+    Option<T>: Debug {
+    // 我们要将 `Option<T>: Debug` 作为约束，因为那是要打印的内容。
+    // 否则我们会给出错误的约束。
+    fn print_in_option(self) {
+        println!("{:?}", Some(self));
+    }
+}
+
+fn main() {
+    let vec = vec![1, 2, 3];
+
+    vec.print_in_option();
+}
+
+```
+
+# 一些不容易理解(奇怪)的语法(语法糖)
+## Option
+Option 代表可能为空可能有值的一种类型，本质上是一个枚举，有两种分别是 Some 和 None。Some 代表有值，None 则类似于 null，代表无值。
+
+使用unwrap()获得实体, refer to official doc:
+
+Returns the contained Some value, consuming the self value.
+Because this function may panic, its use is generally discouraged. Instead, prefer to use pattern matching and handle the None case explicitly, or call unwrap_or, unwrap_or_else, or unwrap_or_default.
+Panics
+Panics if the self value equals None.
+
+## Result
+
+## Some
+只有 Option 和 Result，Some 只是 Option 的一个值包装类型。
+
+## ?
+
+## unit () 
+The () type, also called “unit”.  - 相当于 void in c?
+
+The () type has exactly one value (), and is used when there is no other meaningful value that could be returned. () is most commonly seen implicitly: functions without a -> ... implicitly have return type (), that is, these are equivalent:
+
+```
+fn long() -> () {}
+
+fn short() {}
+```
+
