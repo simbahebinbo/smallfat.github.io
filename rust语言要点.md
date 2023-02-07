@@ -78,6 +78,7 @@ fn main() {
 - 按顺序存储在内存中的相同类型对象的集合
 - 数组的长度或大小等于数组中的元素数
 - 数组大小可在代码中指定，或者由编译器决定
+- 数组 ( array ) 有一个唯一的弱点，它的长度必须在编译时就是固定的已知的。
 
 ```
 fn main() {
@@ -93,7 +94,8 @@ let a = [1, 2, 3, 4, 5];
 ```
 
 ## 矢量 (vector)
-- 存储相同类型的多个变量
+- 存储相同类型的多个值
+- 这些值在内存中一个紧挨着另一个排列
 - 大小可随时增加或者缩小(在编译时，大小随时间更改的功能是隐式的) (与map类似？)
 
 ```
@@ -116,6 +118,12 @@ match third {
 }
 
 ```
+- 内存结构：
+
+![vector memory structure](./images/1675750422110.png)
+
+- clone(): 深拷贝还是浅拷贝？
+
 
 # 流程控制
 ## 分支 - if/else
@@ -322,6 +330,88 @@ fn main() {
 
 ```
 
+# lifetime
+## concept
+变量的lifetime在rust里面是要求很严格。主要是为了避免dangling reference（迷途指针）问题
+
+## solving problem - Lifetime Annotation Syntax
+- Lifetime annotations don’t change how long any of the references live. 
+- they describe the relationships of the lifetimes of multiple references to each other without affecting the lifetimes
+
+### syntax
+- the names of lifetime parameters must start with an apostrophe (') 
+- are usually all lowercase and very short, like generic types
+- use the name 'a for the first lifetime annotation. 
+- We place lifetime parameter annotations after the & of a reference, using a space to separate the annotation from the reference’s type.
+
+```
+&i32        // a reference
+
+&'a i32     // a reference with an explicit lifetime
+
+&'a mut i32 // a mutable reference with an explicit lifetime
+```
+### LSA in Struct Definition
+
+```
+struct ImportantExcerpt<'a> {
+    part: &'a str,
+}
+
+fn main() {
+    let novel = String::from("Call me Ishmael. Some years ago...");
+    let first_sentence = novel.split('.').next().expect("Could not find a '.'");
+    let i = ImportantExcerpt {
+        part: first_sentence,
+    };
+}
+
+```
+
+- As with generic data types, we declare the name of the generic lifetime parameter inside angle brackets **after** **the name of the struct** 
+- We can use the lifetime parameter in the body of the struct definition. 
+- This annotation means **an instance of ImportantExcerpt can’t outlive** the reference it holds in its part field.
+
+### LSA in Function Signatures
+
+```
+fn longest<'a>(x: &'a str, y: &'a str) -> &'a str {
+    if x.len() > y.len() {
+        x
+    } else {
+        y
+    }
+}
+```
+
+The function signature now tells Rust that for some lifetime 'a
+- the function takes two parameters, both of which are string slices that live at least as long as lifetime 'a. 
+- also tells Rust that the string slice returned from the function will live at least as long as lifetime 'a. 
+
+In practice, it means that the lifetime of the reference returned by the longest function is the same as the smaller of the lifetimes of the values referred to by the function arguments. 
+ 
+These relationships are what we want Rust to use when analyzing this code.
+
+
+## 延伸思考
+- LAS 只是用来标记并告诉rust编译器目标变量们的生命周期是否一致，不表达生命周期多长与范围
+- 因为dangling reference的问题本质：是同一内存被多个变量引用，内存被释放时，仍然有变量引用
+
+
+# Visibility
+```
+      pub
+   | pub ( crate )
+   | pub ( self )
+   | pub ( super )
+   | pub ( in SimplePath )
+```
+
+ - pub(in path) makes an item visible within the provided path. path must be an ancestor module of the item whose visibility is being declared.
+ - pub(crate) makes an item visible within the current crate.
+ - pub(super) makes an item visible to the parent module. This is equivalent to pub(in super).
+ - pub(self) makes an item visible to the current module. This is equivalent to pub(in self) or not using pub at all.
+
 # 函数
 ## normal function
 
@@ -434,6 +524,9 @@ pub trait Summary {
 }
 ```
 
+## 虚拟接口与trait object
+
+
 # 泛型 Generics
 ## where关键字
 - 当分别指定泛型的类型和约束会更清晰时：
@@ -480,17 +573,20 @@ Option 代表可能为空可能有值的一种类型，本质上是一个枚举�
 
 使用unwrap()获得实体, refer to official doc:
 
+```
 Returns the contained Some value, consuming the self value.
 Because this function may panic, its use is generally discouraged. Instead, prefer to use pattern matching and handle the None case explicitly, or call unwrap_or, unwrap_or_else, or unwrap_or_default.
 Panics
 Panics if the self value equals None.
+```
 
 ## Result
 
-## Some
+## Some/None
 只有 Option 和 Result，Some 只是 Option 的一个值包装类型。
 
 ## ?
+功能等同于unwrap()， 
 
 ## unit () 
 The () type, also called “unit”.  - 相当于 void in c?
@@ -503,3 +599,5 @@ fn long() -> () {}
 fn short() {}
 ```
 
+## drop
+As Rust automatically calls the destructors of all contained fields, you don’t have to implement Drop in most cases. But there are some cases where it is useful, for example for types which directly manage a resource. That resource may be memory, it may be a file descriptor, it may be a network socket. Once a value of that type is no longer going to be used, it should “clean up” its resource by freeing the memory or closing the file or socket. 
