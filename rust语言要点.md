@@ -587,7 +587,7 @@ Panics if the self value equals None.
 只有 Option 和 Result，Some 只是 Option 的一个值包装类型。
 
 ## ?
-功能等同于unwrap()， 
+基本功能包括unwrap()， 但有错误时会返回错误
 
 ## unit () 
 The () type, also called “unit”.  - 相当于 void in c?
@@ -602,3 +602,7 @@ fn short() {}
 
 ## drop
 As Rust automatically calls the destructors of all contained fields, you don’t have to implement Drop in most cases. But there are some cases where it is useful, for example for types which directly manage a resource. That resource may be memory, it may be a file descriptor, it may be a network socket. Once a value of that type is no longer going to be used, it should “clean up” its resource by freeing the memory or closing the file or socket. 
+
+
+# inspiration
+1. 变量类型没有实现copy trait时，本义为copy赋值的“=”，可能会转换为"move"语义？
