@@ -606,3 +606,5 @@ As Rust automatically calls the destructors of all contained fields, you don’t
 
 # inspiration
 1. 变量类型没有实现copy trait时，本义为copy赋值的“=”，可能会转换为"move"语义？
+
+2. var.clone 与 &var.clone的语义差别
