@@ -351,6 +351,7 @@ fn main() {
 
 &'a mut i32 // a mutable reference with an explicit lifetime
 ```
+
 ### LSA in Struct Definition
 
 ```
