@@ -514,6 +514,7 @@ Mutability of data can be changed when ownership is transferred.
 	- 可以具有跨其他模块的递归定义。
 	
 # 特征 trait	
+## 基本用法
 特征定义了一个可以被共享的行为，只要实现了特征，你就能使用该行为。
 
 ```
@@ -525,10 +526,110 @@ pub trait Summary {
 }
 ```
 
-## 虚拟接口与trait object
+Trait最基本的作用是从多种类型中抽取出共性的属性或方法，并定义这些方法的规范(即方法签名)
 
+```
+trait Playable {
+  fn play(&self);
+  fn pause(&self) {
+    println!("pause");
+  }
+  fn get_duration(&self) -> f32;
+}
 
-# 泛型 Generics
+struct Audio {
+  name: String,
+  duration: f32,
+}
+
+impl Playable for Audio {
+  fn play(&self) {
+    println!("listening audio: {}", self.name);
+  }
+  fn get_duration(&self) -> f32 {
+    self.duration
+  }
+}
+```
+
+```
+fn main() {
+  let audio = Audio{
+    name: "telephone.mp3".to_string(),
+    duration: 4.32,
+  };
+  audio.play();
+  audio.pause();
+  println!("{}", audio.get_duration());
+
+  let video = Video {
+    name: "Yui Hatano.mp4".to_string(),
+    duration: 59.59,
+  };
+  video.play();
+  video.pause();
+  println!("{}", video.get_duration());
+}
+```
+
+当Audio类型和Video类型实现了Playable Trait后，这两个类型的实例对象自然可以去调用它们各自定义的方法。而对于Audio没有定义的pause方法，则会从其所实现的root Trait中寻找。
+
+## trait object
+Rust中不能直接将Trait当作数据类型来使用
+
+Rust真正支持的用法是：虽然Trait自身不能当作数据类型来使用，但Trait Object可以当作数据类型来使用。因此，可以将实现了Trait A的类型B、C、D当作Trait A的Trait Object来使用
+
+Trait Object是Rust支持的一种数据类型，它可以有自己的实例数据，就像Struct类型有自己的实例对象一样
+
+Trait A，写法dyn A，表示Trait A的Trait Object类型，由于Trait Object的大小不固定，因此几乎总是使用Trait Object的引用方式&dyn A，Trait Object的引用保存在栈中，包含两份数据：Trait Object所指向数据的指针和指向一个虚表vtable的指针。
+
+特点：
+- Trait Object大小不固定
+- 虽然Trait Object没有固定大小，但它的引用类型的大小是固定的，它由两个指针组成，因此占用两个指针大小，即两个机器字长
+- 一个指针指向实现了Trait A的具体类型的实例，也就是当作Trait A来用的类型的实例，比如B类型的实例、C类型的实例等
+- 另一个指针指向一个虚表vtable，vtable中保存了B或C类型的实例对于可以调用的实现于A的方法。当调用方法时，直接从vtable中找到方法并调用。
+- Trait Object的引用方式有多种。例如对于Trait A，其Trait Object类型的引用可以是&dyn A、Box<dyn A>、Rc<dyn A>等
+```
+// 为了排版，调整了代码格式
+trait Playable {
+  fn play(&self);
+  fn pause(&self) {println!("pause");}
+  fn get_duration(&self) -> f32;
+}
+
+// Audio类型，实现Trait Playable
+struct Audio {name: String, duration: f32}
+impl Playable for Audio {
+  fn play(&self) {println!("listening audio: {}", self.name);}
+  fn get_duration(&self) -> f32 {self.duration}
+}
+
+// Video类型，实现Trait Playable
+struct Video {name: String, duration: f32}
+impl Playable for Video {
+  fn play(&self) {println!("watching video: {}", self.name);}
+  fn pause(&self) {println!("video paused");}
+  fn get_duration(&self) -> f32 {self.duration}
+}
+```
+
+```
+fn main() {
+  let x: &dyn Playable = &Audio{
+    name: "telephone.mp3".to_string(),
+    duration: 3.42,
+  };
+  x.play();
+  
+  let y: &dyn Playable = &Video{
+    name: "Yui Hatano.mp4".to_string(),
+    duration: 59.59,
+  };
+  y.play();
+}
+```
+
+# 泛型 Generi<a class="xsj_anchor xsj_anchor_range xsj_anchor_range_start" name="xsj_1676887032680"></a>c<a class="xsj_anchor xsj_anchor_range xsj_anchor_range_end" name="xsj_1676887032680"></a>s
 ## where关键字
 - 当分别指定泛型的类型和约束会更清晰时：
 
