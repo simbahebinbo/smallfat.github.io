@@ -148,7 +148,8 @@ let greeting = ***if formal*** { // if used here as an expression
 println!("{}", greeting)   // prints "Good day to you."
 ```
 
-## 分支 - match
+## 分支
+- match
 
 Rust provides pattern matching via the match keyword, which can be used like a C switch. The first matching arm is evaluated and all possible values must be covered.
 
@@ -182,6 +183,26 @@ fn main() {
 
     println!("{} -> {}", boolean, binary);
 }
+
+```
+
+- if let
+
+```
+fn main() {
+    let number = Some(7);
+    let letter: Option<i32> = None;
+    let emoticon: Option<i32> = None;
+
+    if let Some(i) = number {
+        println!("Matched {:?}!", i);
+    }
+
+    if let Some(i) = letter {
+        println!("Matched {:?}!", i);
+    } else {
+        println!("Didn't match a number. Let's go with a letter!");
+    }
 
 ```
 
