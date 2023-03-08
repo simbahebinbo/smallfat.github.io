@@ -77,8 +77,10 @@ fn main() {
 ## 数组 (array)
 - 按顺序存储在内存中的相同类型对象的集合
 - 数组的长度或大小等于数组中的元素数
-- 数组大小可在代码中指定，或者由编译器决定
+- 数组大小可在代码中指定，或者由编译器决定: 它们的大小在编译时会被确定。
 - 数组 ( array ) 有一个唯一的弱点，它的长度必须在编译时就是固定的已知的。
+- 使用中括号 [] 来创建
+- 数组的类型标记为 [T; length]（注：T 为元素类型，length 表示数组大小）。
 
 ```
 fn main() {
@@ -92,6 +94,12 @@ let a = [1, 2, 3, 4, 5];
 
 
 ```
+
+## 切片(slice)
+- 切片（slice）类型和数组类似，但其大小在编译时是不确定的。
+- 切片是一个双字对象（two-word object），第一个字是一个指向数据的指针，第二个字是切片的长度。
+- 这个 “字” 的宽度和 usize 相同，由处理器架构决定，比如在 x86-64 平台上就是 64 位。slice 可以用来借用数组的一部分。slice 的类型标记为 &[T]。
+
 
 ## 矢量 (vector)
 - 存储相同类型的多个值
@@ -483,6 +491,9 @@ fn main() {
 ## 闭包
 
 # 内存管理
+## Box智能指针
+
+## Arc智能指针
 
 # 错误处理
 
@@ -605,13 +616,14 @@ Trait Object是Rust支持的一种数据类型，它可以有自己的实例数�
 Trait A，写法dyn A，表示Trait A的Trait Object类型，由于Trait Object的大小不固定，因此几乎总是使用Trait Object的引用方式&dyn A，Trait Object的引用保存在栈中，包含两份数据：Trait Object所指向数据的指针和指向一个虚表vtable的指针。
 
 特点：
-- Trait Object大小不固定
-- 虽然Trait Object没有固定大小，但它的引用类型的大小是固定的，它由两个指针组成，因此占用两个指针大小，即两个机器字长
-- 一个指针指向实现了Trait A的具体类型的实例，也就是当作Trait A来用的类型的实例，比如B类型的实例、C类型的实例等
-- 另一个指针指向一个虚表vtable，vtable中保存了B或C类型的实例对于可以调用的实现于A的方法。当调用方法时，直接从vtable中找到方法并调用。
-- Trait Object的引用方式有多种。例如对于Trait A，其Trait Object类型的引用可以是&dyn A、Box<dyn A>、Rc<dyn A>等
+1 Trait Object大小不固定
+2 虽然Trait Object没有固定大小，但它的引用类型的大小是固定的，它由两个指针组成，因此占用两个指针大小，即两个机器字长
+3 一个指针指向实现了Trait A的具体类型的实例，也就是当作Trait A来用的类型的实例，比如B类型的实例、C类型的实例等
+4 另一个指针指向一个虚表vtable，vtable中保存了B或C类型的实例对于可以调用的实现于A的方法。当调用方法时，直接从vtable中找到方法并调用。
+5 Trait Object的引用方式有多种。例如对于Trait A，其Trait Object类型的引用可以是&dyn A、Box\<dyn A\>、Rc\<dyn A\>等
+
+
 ```
-// 为了排版，调整了代码格式
 trait Playable {
   fn play(&self);
   fn pause(&self) {println!("pause");}
@@ -730,3 +742,5 @@ As Rust automatically calls the destructors of all contained fields, you don’t
 1. 变量类型没有实现copy trait时，本义为copy赋值的“=”，可能会转换为"move"语义？
 
 2. var.clone 与 &var.clone的语义差别
+
+3. Box\<T\>.clone，是否拷贝了堆上真正的数据？
