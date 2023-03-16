@@ -28,10 +28,6 @@ PCS Leader接收到申请以后，检查租约是否重复（若重复就拒绝�
 
 租约复制成功（达到多数派条件）后，PCS Leader将租约发送给申请节点。双方开始履行租约。
 
-
-![enter description here](./images/1678425880152.png)
-
-
 # 问题
 ## lease机制怎么检测并处理Node Failure
 由于lease(租约)拥有“期限”，可以非常好的容错网络异常。
@@ -56,16 +52,82 @@ lease机制中，PCS与各节点都在各自的单调时钟下判断时间，怎
 1. PCS Leader将租约颁发和租约过期写入自己的日志，并持久化到计算节点本地后，再同步到PCS follower（Quorum协议？）
 2. PCS Leader将租约颁发和租约过期写入系统表，由系统表同步机制同步到PCS follower（Quorum协议？）
 
-将lease机制引入PCS后，PCS将从无状态变为有状态。那么PCS选主策略，是否也要发生相应的改变？
 
-是否需要落盘？利弊？必要性？PCS日志同步机制通用
+将lease机制引入PCS后，PCS将从无状态变为有状态。那么PCS选主策略，是否也要发生相应的改变？
 
 ##  PCS重新选主，lease数据怎么处理
 新主应加载所有lease数据，并给所有lease主动续期，以便租约持有节点连接上来并续期
 
-
-# 其他系统使用lease机制的情况
-Google 的 chubby 服务实现了类似的基于时间限制的租约机制。
-zookeeper 的会话管理采用了类似于复制租约的机制。
-Kafka 的 kip-631 提出使用有时间限制的租约，对分组成员信息进行管理。
+==========================================================================================================
+# 可以参考的其他系统
+## etcd
 etcd 提供了有时间限制的租约设施，客户端可以用其协调其活动，以及分组成员信息和失效检测。
+
+```
+type Lease struct {
+	ID           LeaseID
+	ttl          int64 // time to live of the lease in seconds
+	...
+	// expiry is time when lease should expire. no expiration when expiry.IsZero() is true
+	expiry time.Time
+
+	...
+}
+```
+
+
+主逻辑：由client申请注册一个lease，租期为ttl, server端leader同意注册，并负责检测lease过期情况
+
+lease过期检测：比较 expiry 时间 与 当前服务器时间
+
+续期：client端发起，server端更新 expiry。
+
+lease 信息持久化与节点同步： 通过raft持久化并同步lease信息
+
+leader切换：新leader成为leader后，从持久化存储读取并重建lease列表
+
+特点：由server leader 
+
+
+## tidb-placement driver
+
+![enter description here](./images/Screenshot_from_2023-03-16_22-49-32.png)
+
+Up：表示当前的 TiKV Store 处于提供服务的状态。
+Disconnect：当 PD 和 TiKV Store 的心跳信息丢失超过 20 秒后，该 Store 的状态会变为 Disconnect 状态，当时间超过 max-store-down-time 指定的时间后，该 Store 会变为 Down 状态。
+Down：表示该 TiKV Store 与==集群失去连接的时间已经超过了 max-store-down-time 指定的时间，默认 30 分钟。超过该时间后，对应的 Store 会变为 Down，并且开始在存活的 Store 上补足各个 Region 的副本。 #2196F3==
+Offline：当对某个 TiKV Store 通过 PD Control 进行手动下线操作，该 Store 会变为 Offline 状态。该状态只是 Store 下线的中间状态，处于该状态的 Store 会将其上的所有 Region 搬离至其它满足搬迁条件的 Up 状态 Store。当该 Store 的 leader_count 和 region_count (在 PD Control 中获取) 均显示为 0 后，该 Store 会由 Offline 状态变为 Tombstone 状态。在 Offline 状态下，禁止关闭该 Store 服务以及其所在的物理服务器。下线过程中，如果集群里不存在满足搬迁条件的其它目标 Store（例如没有足够的 Store 能够继续满足集群的副本数量要求），该 Store 将一直处于 Offline 状态。
+Tombstone：表示该 TiKV Store 已处于完全下线状态，可以使用 remove-tombstone 接口安全地清理该状态的 TiKV。
+
+# 问题
+## lease中过期时间判断
+在Postdbv4中，PCS与数据访问活动是分离的。
+
+那么在租约过期时间判断上，只凭PCS leader来判断，可能会导致双主（因为拥有租约的节点并不知道自己过期，还一直在接收数据访问请求）。
+
+etcd为什么可以只在Primary Server上进行判断就可以呢？
+
+因为在etcd中，数据访问活动与lease过期判断都在primary server进行决策，lease 信息对于数据访问活动来说，是实时信息，所以Primary Server可以独立决定node或者region的租约状态。
+
+tidb-placement driver与
+
+## PCS Leader是否需要将lease信息同步给PCS follower?
+
+
+## PCS Leader怎么将lease信息同步给PCS follower？
+从具体实现上看，有几种方式：
+1. PCS Leader将租约颁发和租约过期写入自己的日志，并持久化到计算节点本地后，再同步到PCS follower
+2. PCS Leader将租约颁发和租约过期写入系统表，由系统表同步机制同步到PCS follower
+
+=============================================
+
+
+# 方案
+## 1
+
+
+
+## 2
+如果PCS leader与拥有租约的节点，同时进行过期时间判断，那么又存在下述问题：
+
+PCS与拥有租约的节点都在各自的单调时钟下判断时间，怎么处理基准时间不同步？
