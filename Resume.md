@@ -30,8 +30,8 @@ grammar_cjkRuby: true
 本系统为一款为金融系统设计的分布式数据库。
 
 负责子系统：
-- cluster service
-- backup & restore
+- 集群服务 cluster service - 数据库集群的主节点分配策略，状态管理，缩容扩容，Fault tolerance
+- 备份恢复 backup restore - 数据库的物理备份恢复
 
 **scryinfo(新加坡)基金会**(2018年9月 ~ 2020年8月)
 - 区块链数据协议层开发
