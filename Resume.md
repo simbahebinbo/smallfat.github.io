@@ -17,9 +17,9 @@ grammar_cjkRuby: true
 - Blog: https://smallfat.github.io/
 
 ### 技术特点
-- 熟悉postgresql内核开发，以及分布式数据库内核实际开发经验
+- 熟悉分布式数据库概念，有着丰富的postgresql数据库内核开发经验
 - 熟悉raft等分布式一致性协议
-- 熟悉基于多路复用的异步网络编程，对libevent有过源码级的研究；熟悉基于协程的高并发服务端框架
+- 熟悉基于多路复用的异步网络编程，对libevent有过源码级的研究；
 - 良好的软件工程素养：熟悉agile scrum/Git/Gerrit；良好的软件质量意识
  
 ### 工作项目经历
