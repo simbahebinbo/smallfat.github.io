@@ -104,11 +104,11 @@ tidb-placement driver在节点断连30分钟后，直接判断为下线，开始
 ## 1
 方案同tidb - placement driver，设置一个长时间的断连时间（PD为30分钟），保证节点大概率真实下线。
 
-缺点：不能对节点故障及时反应，灵敏性不好
-优点：
-- 简单
-- pcs 是无状态的，无需信息同步
 
+优点：
+- 简单，有效
+- pcs 是无状态的，无需信息同步
+缺点：不能对节点故障及时反应，灵敏性不好
 ## 2
 a. lease client 向 lease server申请 lease, 包括 [leaseID, ttl 租期, expiry_time1 过期时间]
 b. lease server 接收到申请，更新 lease信息为 [leaseID, ttl 租期, expiry_time2 过期时间]
@@ -118,8 +118,8 @@ expiry_time2 = 收到申请时间 + ttl + 时钟漂移补差，这样保证了se
 c. lease server 同步lease信息到lease client
 d. lease server 颁发lease 给 lease client
 
-
-
+优点：有效应对了node fault的场景，特别是网络分区下的双主问题
+缺点：节点受租约限制，在pcs全down的情况下，租约不能续租，到期后不能工作
 
 =====================================================================
 
