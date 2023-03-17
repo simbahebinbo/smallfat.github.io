@@ -123,6 +123,8 @@ d. lease server 颁发lease 给 lease client
 
 =====================================================================
 
+![enter description here](./images/Screenshot_from_2023-03-17_13-26-55.png)
+
 # 要解决的问题
 - lease中过期时间判断
 - PCS Leader是否需要将lease信息同步给PCS follower?
