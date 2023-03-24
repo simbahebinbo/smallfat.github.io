@@ -21,26 +21,45 @@ storage node 在每个term只能给一个pcs node投票
 优化点：
 pcs node在给voter 发送request vote时，等到至少多数voter都是Online连接状态时发送
 pcs node 在转到新的term时，持久化存储保留该term，重启时load term
-storage node在发送vote response时，vote和不vote都会回复，使得pcs node不用等到election timeout才进入下一轮，加快选主效率
 
 异常处理：
 storage node保存vote for信息，避免voter在同一个term投2次票
 
+**工作进度：代码已完成**
+
+# pcs 管理哪些数据
+slice leader信息
+node status信息，如下线状态，cpu使用率， 硬盘使用信息等
+为维持node status所采取的相应机制（比如lease机制）的相关数据，如每个node的租约信息
+
+# pcs node间数据的同步和数据持久化
+考虑：
+- pcs node 无状态，不依赖本地存储，也就是说在另外的node，拉起一个新的pcs node也可以工作
+- 将满足多数派的pcs 数据，持久化到meta中
+
+pcs leader内存中的数据，通过数据复制到pcs follower 上，满足quorum多数派要求后，写入到meta postdb中。
+网络分区情况下多leader的异常可以避免。
+
+其他node可以通过meta postdb获取pcs 数据
 
 
-# pcs node数据的持久化
+![enter description here](./images/Screenshot_from_2023-03-24_09-31-23.png)
 
-# pcs node间数据的同步
 
 # 选择slice leader
 ## 策略
+根据node的负载，选择负载最小的node成为它所在slice的leader
+
 ##  哪些node需要知道slice leader信息
+所有业务 node
+
 ## 这些node怎么知道某个slice的leader
+可以通过Meta信息得到
+也可以由pcs leader推送消息
 
 # node下线状态判断
 ## 利用租期机制
 1. 原理上周说过
-2. 与etcd不同的是，postdb
 
 
 # node下线后的调度
@@ -54,11 +73,4 @@ storage node保存vote for信息，避免voter在同一个term投2次票
 3. node 类型:  storage node
 	？
 
-# 选主结果通知
-## 哪些node需要知道pcs leader信息
-
-## 将选主结果通知给本Node其他模块
-
-
-## 将选主结果通知给其他node
 
