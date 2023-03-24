@@ -26,11 +26,6 @@ storage node在发送vote response时，vote和不vote都会回复，使得pcs n
 异常处理：
 storage node保存vote for信息，避免voter在同一个term投2次票
 
-## 将选主结果通知给本Node其他模块
-
-
-## 将选主结果通知给其他node
-
 
 
 # pcs node数据的持久化
@@ -58,3 +53,12 @@ storage node保存vote for信息，避免voter在同一个term投2次票
 	
 3. node 类型:  storage node
 	？
+
+# 选主结果通知
+## 哪些node需要知道pcs leader信息
+
+## 将选主结果通知给本Node其他模块
+
+
+## 将选主结果通知给其他node
+
