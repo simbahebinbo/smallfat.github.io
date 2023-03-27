@@ -73,4 +73,8 @@ pcs leader内存中的数据，通过数据复制到pcs follower 上，满足quo
 3. node 类型:  storage node
 	？
 
+# 网络分区对PCS的影响
+
+
+# node fault对PCS的影响
 
