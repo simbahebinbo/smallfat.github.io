@@ -33,17 +33,54 @@ node status信息，如下线状态，cpu使用率， 硬盘使用信息等
 为维持node status所采取的相应机制（比如lease机制）的相关数据，如每个node的租约信息
 
 # pcs node间数据的同步和数据持久化
-考虑：
-- pcs node 无状态，不依赖本地存储，也就是说在另外的node，拉起一个新的pcs node也可以工作
-- 将满足多数派的pcs 数据，持久化到meta中
+**方案1：** 
+client向pcs leader请求写入，pcs leader将数据存入内存，然后向follower发出请求，follower回复同意，leader判断回复的数量满足quorum多数派要求后，写入到meta postdb中。
+meta中pcs相关数据是经过多数派同意的，是可以信任的
+pcs follower从meta 订阅日志流并回放来同步pcs数据
+其他node通过从meta 订阅日志流并回放获取pcs 数据
 
-pcs leader内存中的数据，通过数据复制到pcs follower 上，满足quorum多数派要求后，写入到meta postdb中。
-网络分区情况下多leader的异常可以避免。
+网络分区场景：
+因为写入meta中的pcs数据是需要满足多数派的，所以此情况下多leader的异常（重复写入数据）可以避免。
 
-其他node可以通过meta postdb获取pcs 数据
+node crash场景：
+	pcs leader crash:
+		client发出write request，在数据由pcs leader写入meta 之前，pcs leader crash后，client判断此次写入超时失败
+		pcs leader crash会引起pcs election，重新选择新的leader
+	
+	pcs follower crash:
+		follower crash之后重启，从meta复制数据，并订购meta 日志流，进行数据恢复
+
+优点：
+pcs节点无状态，可在其他node上启动pcs实例
+pcs数据通过meta进行持久化
+pcs数据是meta信息的一部分，其他node可通过meta获取pcs信息
+
+缺点：
+pcs 对meta有依赖 ，meta node(计算及存储节点) crash了pcs也无法工作 
+因此, meta crash了，所有node都将受到影响，因此首先应该将meta node 恢复正常
+
 
 
 ![enter description here](./images/Screenshot_from_2023-03-24_09-31-23.png)
+
+**方案2：**
+此方案将PCS设计为完全无状态的模块
+
+稳定期数据同步： pcs leader 向pcs follower内存中同步数据，采用逻辑复制的方式
+leader切换： 选主成功后，新leader向所有业务node发出数据更新请求，业务node更新自己的数据，据此，新leader重获所有最新node相关数据(slice leader/lease相关信息/)
+
+网络分区场景：
+
+
+node crash场景：
+
+
+优点：
+完全无状态
+所有PCS节点crash以后，可重启老节点或在新的节点上启动pcs
+
+缺点：
+leader切换后，PCS中只有即时node数据
 
 
 # 选择slice leader
