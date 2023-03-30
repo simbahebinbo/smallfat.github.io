@@ -34,6 +34,9 @@ node status信息，如下线状态，cpu使用率， 硬盘使用信息等
 
 # pcs node间数据的同步和数据持久化
 **方案1：** 
+
+![enter description here](./images/69929038.jpg)
+
 client向pcs leader请求写入，pcs leader将数据存入内存，然后向follower发出请求，follower回复同意，leader判断回复的数量满足quorum多数派要求后，写入到meta postdb中。
 meta中pcs相关数据是经过多数派同意的，是可以信任的
 pcs follower从meta 订阅日志流并回放来同步pcs数据
@@ -59,29 +62,8 @@ pcs数据是meta信息的一部分，其他node可通过meta获取pcs信息
 pcs 对meta有依赖 ，meta node(计算及存储节点) crash了pcs也无法工作 
 因此, meta crash了，所有node都将受到影响，因此首先应该将meta node 恢复正常
 
-
-
-![enter description here](./images/Screenshot_from_2023-03-24_09-31-23.png)
-
-**方案2：**
-此方案将PCS设计为完全无状态的模块
-
-稳定期数据同步： pcs leader 向pcs follower内存中同步数据，采用逻辑复制的方式
-leader切换： 选主成功后，新leader向所有业务node发出数据更新请求，业务node更新自己的数据，据此，新leader重获所有最新node相关数据(slice leader/lease相关信息/)
-
-网络分区场景：
-
-
-node crash场景：
-
-
-优点：
-完全无状态
-所有PCS节点crash以后，可重启老节点或在新的节点上启动pcs
-
-缺点：
-leader切换后，PCS中只有即时node数据
-
+难点：
+需要增加日志回放机制与buffer机制
 
 # 选择slice leader
 ## 策略
@@ -110,8 +92,30 @@ leader切换后，PCS中只有即时node数据
 3. node 类型:  storage node
 	？
 
-# 网络分区对PCS的影响
+==================
+**方案2：**
+此方案下PCS为完全无状态的模块
 
+leader切换： 选主成功后，新leader向所有业务node发出数据更新请求，业务node向pcs报告自己的数据，据此，新leader重获所有最新node相关数据(slice leader/lease相关信息/)
 
-# node fault对PCS的影响
+网络分区场景：
+	出现双leader/脑裂现象：
+		新的leader在old_term + 1会重新从node收集数据
+		
+	维持原先leader：
+		不影响
 
+node crash场景：
+	pcs leader crash:
+		client发出write request，pcs leader crash后，client判断此次写入超时失败
+		pcs leader crash会引起pcs election，重新选择新的leader。新的leader会强制更新pcs node 数据
+	
+	pcs follower crash:
+		follower crash之后重启，从leader复制数据，进行数据恢复
+
+优点：
+完全无状态
+所有PCS节点crash以后，可重启老节点或在新的节点上启动pcs
+
+缺点：
+leader切换后，PCS中只有即时node数据
