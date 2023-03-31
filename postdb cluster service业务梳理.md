@@ -80,11 +80,14 @@ pcs 对meta有依赖 ，meta node(计算及存储节点) crash了pcs也无法工
 ## 策略
 根据node的负载，选择负载最小的node成为它所在slice的leader
 
-##  哪些node需要知道slice leader信息
-所有业务 node
-
 ## 这些node怎么知道某个slice的leader
 可以由pcs leader推送消息
+
+
+## 问题
+host metrics（cpu...）需要由node报告到pcs leader
+
+## 进度
 
 ===============================================
 # node下线状态判断
