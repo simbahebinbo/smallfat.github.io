@@ -43,18 +43,20 @@ pcs需求：无状态节点
 
 **方案1：** 
 
+![绘图](./attachments/1680233830749.drawio.svg)
+1. client(pcs其他模块)向PCS Leader请求写入数据，pcs leader将数据存入内存，
+2. pcs leader 向follower发出请求，follower回复同意(不同步数据)
+3. leader判断回复的数量满足quorum多数派要求后，写入到meta postdb中。
+4. 写入完成后，pcs leader回复client写入完成
+5. pcs leader把数据推送到其他计算节点的PCS front buf（此数据带有pcs term 和 term version），其他计算节点可直接从该组件读取pcs数据。pcs的最新term和最新term version会随着心跳吧发送到计算节点。计算节点从PCS front buf读取数据时，pcs front buf会比较term和term version，判断数据版本。
+6. PCS follower向meta postdb订购PCS日志，同步pcs数据
 
-
-
-![enter description here](./images/69929038.jpg)
-
-client向pcs leader请求写入，pcs leader将数据存入内存，然后向follower发出请求，follower回复同意，leader判断回复的数量满足quorum多数派要求后，写入到meta postdb中。
 meta中pcs相关数据是经过多数派同意的，是可以信任的
 pcs follower从meta 订阅日志流并回放来同步pcs数据
-其他node通过从meta 订阅日志流并回放获取pcs 数据
+其他node通过从PCS front buf获取pcs 数据
 
 网络分区场景：
-因为写入meta中的pcs数据是需要满足多数派的，所以此情况下多leader的异常（重复写入数据）可以避免。
+因为写入meta中的pcs数据是需要满足多数派的，所以此情况下多leader的异常可以避免。
 
 node crash场景：
 	pcs leader crash:
@@ -65,16 +67,14 @@ node crash场景：
 		follower crash之后重启，从meta复制数据，并订购meta 日志流，进行数据恢复
 
 优点：
-pcs节点无状态，可在其他node上启动pcs实例
+pcs节点无状态，可随时在其他node上启动pcs实例
 pcs数据通过meta进行持久化
-pcs数据是meta信息的一部分，其他node可通过meta获取pcs信息
+其他node可通过pcs front buf获取pcs信息，减少了网络流量，避免网络拥挤，且不从follower读取数据，使得follower同步数据可以延后，提高写入效率
 
 缺点：
 pcs 对meta有依赖 ，meta node(计算及存储节点) crash了pcs也无法工作 
 因此, meta crash了，所有node都将受到影响，因此首先应该将meta node 恢复正常
 
-难点：
-需要增加日志回放机制与buffer机制
 
 # 选择slice leader
 ## 策略
@@ -84,9 +84,9 @@ pcs 对meta有依赖 ，meta node(计算及存储节点) crash了pcs也无法工
 所有业务 node
 
 ## 这些node怎么知道某个slice的leader
-可以通过Meta信息得到
-也可以由pcs leader推送消息
+可以由pcs leader推送消息
 
+===============================================
 # node下线状态判断
 ## 利用租期机制
 1. 原理上周说过
