@@ -32,8 +32,19 @@ slice leader信息
 node status信息，如下线状态，cpu使用率， 硬盘使用信息等
 为维持node status所采取的相应机制（比如lease机制）的相关数据，如每个node的租约信息
 
-# pcs node间数据的同步和数据持久化
+# pcs 数据持久化和数据通知机制
+
+pcs数据的特点：少量，关键数据，更新频率不高
+pcs需求：无状态节点
+
+**方案0：**
+可以采用类似Postdbv3中计算节点数据持久化机制，pcs的数据存在在storage节点，需要处理数据的不一致问题
+因pcs数据量较少，此方案对于pcs来说有点重
+
 **方案1：** 
+
+
+
 
 ![enter description here](./images/69929038.jpg)
 
